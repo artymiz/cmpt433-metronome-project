@@ -5,22 +5,29 @@
 #define SOURCE_FILE "metronome-tick.wav"
 
 #include "Audio-mod/Audio.h"
+#include "Timing-mod/Timing.h"
+#include <unistd.h>
 
 int main(void)
 {
-	printf("Beginning play-back of %s\n", SOURCE_FILE);
-
 	// Configure Output Device
 	Audio_init();
 
 	// Load wave file we want to play:
 	wavedata_t wavedata;
-	Audio_load(SOURCE_FILE, &wavedata);
 
-	// Play Audio
-	Audio_play(&wavedata);
-//	Audio_playFile(handle, &wavedata);
-//	Audio_playFile(handle, &wavedata);
+	Audio_load(SOURCE_FILE, &wavedata);
+	
+	// int iterTime = 1000; // Time that for loop should take
+	for (size_t i = 0; i < 10; i++)
+	{
+		// int start = Timing_stampMs();
+		Audio_play(&wavedata);
+		// int end = Timing_stampMs();
+		// printf("%d\n", end); // The numbers should be 1000 apart...
+		// Timing_waitMs(iterTime - (end - start));
+		sleep(1); // ! Why does adding sleep cause "ALSA lib pcm.c:8545:(snd_pcm_recover) underrun occurred"
+	}
 
     free(wavedata.pData);
     Audio_cleanup();

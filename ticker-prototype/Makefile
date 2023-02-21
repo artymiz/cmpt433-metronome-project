@@ -23,7 +23,7 @@ LFLAGS = -L$(HOME)/cmpt433/public/asound_lib_BBG
 #CFLAGS += -pg
 
 all: wav
-	$(CC_C) $(CFLAGS) Audio-mod/Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGS) Timing-mod/Timing.c Audio-mod/Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
 
 # Copy wav file
 wav:
