@@ -14,24 +14,30 @@ int main(void)
 	Audio_init();
 
 	// Load wave file we want to play:
-	wavedata_t wavedata;
+	wavedata_t tick;
+	wavedata_t silence;
 
-	Audio_load(SOURCE_FILE, &wavedata);
-	
-	// int iterTime = 1000; // Time that for loop should take
+	Audio_load(SOURCE_FILE, &tick);
+
+	#define SILENCELEN 43298 // the metronome tick has 802 samples, and one second is 44100 samples
+
+	silence.numSamples = SILENCELEN;
+	int16_t zeros[SILENCELEN];
+	memset(zeros, 0, SILENCELEN * sizeof(int16_t));
+	silence.pData = zeros;
+
 	for (size_t i = 0; i < 10; i++)
 	{
-		// int start = Timing_stampMs();
-		Audio_play(&wavedata);
-		// int end = Timing_stampMs();
-		// printf("%d\n", end); // The numbers should be 1000 apart...
-		// Timing_waitMs(iterTime - (end - start));
-		sleep(1); // ! Why does adding sleep cause "ALSA lib pcm.c:8545:(snd_pcm_recover) underrun occurred"
+		Audio_play(&tick);
+		Audio_play(&silence);
+		// ! Why does adding sleep cause "ALSA lib pcm.c:8545:(snd_pcm_recover) underrun occurred"
+		// ! The buffer needs to be fed after audio init!
+		// ! This makes sense, sleep is inaccurate, but the buffer is precise timing wise!
 	}
 
-    free(wavedata.pData);
+
+    free(tick.pData);
     Audio_cleanup();
 
-	// printf("Done!\n");
 	return 0;
 }

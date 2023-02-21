@@ -90,6 +90,13 @@ void Audio_play(wavedata_t *pWaveData)
 	// Write data and play sound (blocking)
 	snd_pcm_sframes_t frames = snd_pcm_writei(handle, pWaveData->pData, pWaveData->numSamples);
 
+	// if (frames == -EPIPE)
+	// {
+	// 	puts("Underrun from snd_pcm_writei");
+	// } else {
+	// 	printf("%ld\n", frames);
+	// }
+	
 	// Check for errors
 	if (frames < 0)
 		frames = snd_pcm_recover(handle, frames, 0);
