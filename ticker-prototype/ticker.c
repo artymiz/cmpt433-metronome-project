@@ -5,8 +5,6 @@
 #define SOURCE_FILE "metronome-tick.wav"
 
 #include "Audio-mod/Audio.h"
-#include "Timing-mod/Timing.h"
-#include <unistd.h>
 
 int main(void)
 {
@@ -30,6 +28,7 @@ int main(void)
 	{
 		Audio_play(&tick);
 		Audio_play(&silence);
+		// sleep(1);
 		// ! Why does adding sleep cause "ALSA lib pcm.c:8545:(snd_pcm_recover) underrun occurred"
 		// ! The buffer needs to be fed after audio init!
 		// ! This makes sense, sleep is inaccurate, but the buffer is precise timing wise!
