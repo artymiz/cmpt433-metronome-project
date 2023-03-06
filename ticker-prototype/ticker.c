@@ -4,7 +4,7 @@
 // folder along with the executable to ensure both are present.
 #define SOURCE_FILE "metronome-tick.wav"
 
-#include "Audio-mod/Audio.h"
+#include "Audio.h"
 
 int main(void)
 {
@@ -33,7 +33,6 @@ int main(void)
 		// ! The buffer needs to be fed after audio init!
 		// ! This makes sense, sleep is inaccurate, but the buffer is precise timing wise!
 	}
-
 
     free(tick.pData);
     Audio_cleanup();
