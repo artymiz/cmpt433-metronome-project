@@ -3,11 +3,26 @@
 // on the target when the application is run. This example's Makefile copies the wave-files/
 // folder along with the executable to ensure both are present.
 #define SOURCE_FILE "metronome-tick.wav"
+#define SOURCE_FILE_SAMPLE_COUNT 802 // how many samples the source file has
 
 #include "Audio.h"
+#include <assert.h>
 
-int main(void)
+void silence_load(int bpm, wavedata_t *pWaveData)
 {
+	float beat_length_seconds = 60.0 / bpm;
+	int silence_sample_count = SAMPLE_RATE * beat_length_seconds - SOURCE_FILE_SAMPLE_COUNT; // together, silence and the tick take up a beat
+	int16_t *zeros = malloc(SAMPLE_SIZE * silence_sample_count);
+	memset(zeros, 0, silence_sample_count * SAMPLE_SIZE);
+	pWaveData->numSamples = silence_sample_count;
+	pWaveData->pData = zeros;
+}
+
+int main(int argc, char const *argv[])
+{
+	assert(argc == 2);
+	int bpm = atoi(argv[1]);
+
 	// Configure Output Device
 	Audio_init();
 
@@ -16,14 +31,8 @@ int main(void)
 	wavedata_t silence;
 
 	Audio_load(SOURCE_FILE, &tick);
-
-	#define SILENCELEN 43298 // the metronome tick has 802 samples, and one second is 44100 samples
-
-	silence.numSamples = SILENCELEN;
-	int16_t zeros[SILENCELEN];
-	memset(zeros, 0, SILENCELEN * sizeof(int16_t));
-	silence.pData = zeros;
-
+	silence_load(bpm, &silence);
+	
 	for (size_t i = 0; i < 10; i++)
 	{
 		Audio_play(&tick);

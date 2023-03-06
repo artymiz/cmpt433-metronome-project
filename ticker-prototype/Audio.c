@@ -7,10 +7,6 @@
 #include <alsa/asoundlib.h>
 #include "Audio.h"
 
-#define SAMPLE_RATE   44100
-#define NUM_CHANNELS  1
-#define SAMPLE_SIZE   (sizeof(short)) 	// bytes per sample
-
 static snd_pcm_t *handle;
 
 // Open the PCM audio output device and configure it.

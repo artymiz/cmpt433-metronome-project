@@ -1,5 +1,9 @@
 #include <alsa/asoundlib.h>
 
+#define SAMPLE_RATE   44100
+#define NUM_CHANNELS  1
+#define SAMPLE_SIZE   (sizeof(short)) 	// bytes per sample
+
 // Store data of a single wave file read into memory.
 // Space is dynamically allocated; must be freed correctly!
 typedef struct {
