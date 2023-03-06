@@ -2,19 +2,20 @@
 // If cross-compiling, must have this file available, via this relative path,
 // on the target when the application is run. This example's Makefile copies the wave-files/
 // folder along with the executable to ensure both are present.
-#define SOURCE_FILE "metronome-tick.wav"
-#define SOURCE_FILE_SAMPLE_COUNT 802 // how many samples the source file has
+#define TICK_FILE "metronome-tick.wav"
+#define TICK_SAMPLE_COUNT 700 // How many samples long the tick should be.
 
 #include "Audio.h"
 #include <assert.h>
 
-void silence_load(int bpm, wavedata_t *pWaveData)
+// Set pWaveData->pData to point to an array of zeros, number of zeros depends on bpm.
+void silence_load(int bpm, wavedata_t *pWaveData, int tickSampleCount)
 {
-	float beat_length_seconds = 60.0 / bpm;
-	int silence_sample_count = SAMPLE_RATE * beat_length_seconds - SOURCE_FILE_SAMPLE_COUNT; // together, silence and the tick take up a beat
-	int16_t *zeros = malloc(SAMPLE_SIZE * silence_sample_count);
-	memset(zeros, 0, silence_sample_count * SAMPLE_SIZE);
-	pWaveData->numSamples = silence_sample_count;
+	float beatDurationSeconds = 60.0 / bpm;
+	int silenceSampleCount = SAMPLE_RATE * beatDurationSeconds - tickSampleCount; // Together, silence and the tick take up a beat.
+	int16_t *zeros = malloc(SAMPLE_SIZE * silenceSampleCount);
+	memset(zeros, 0, silenceSampleCount * SAMPLE_SIZE);
+	pWaveData->numSamples = silenceSampleCount;
 	pWaveData->pData = zeros;
 }
 
@@ -23,15 +24,14 @@ int main(int argc, char const *argv[])
 	assert(argc == 2);
 	int bpm = atoi(argv[1]);
 
-	// Configure Output Device
+	// Configure Output Device.
 	Audio_init();
 
-	// Load wave file we want to play:
+	// Load wave file and silence we want to play.
 	wavedata_t tick;
 	wavedata_t silence;
-
-	Audio_load(SOURCE_FILE, &tick);
-	silence_load(bpm, &silence);
+	Audio_load(TICK_FILE, &tick, TICK_SAMPLE_COUNT);
+	silence_load(bpm, &silence, TICK_SAMPLE_COUNT);
 	
 	for (size_t i = 0; i < 10; i++)
 	{
@@ -44,6 +44,7 @@ int main(int argc, char const *argv[])
 	}
 
     free(tick.pData);
+	free(silence.pData);
     Audio_cleanup();
 
 	return 0;

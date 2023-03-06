@@ -34,10 +34,10 @@ void Audio_init()
 	}
 }
 
-// Read WAV contents into dynamically allocated memory (wavedata_t->pData).
+// Copy WAV contents into wavedata_t->pData.
 // Size of pData array depends on how long the WAV file is.
 // !! Client code must free memory in wavedata_t !!
-void Audio_load(char *fileName, wavedata_t *pWaveData)
+void Audio_load(char *fileName, wavedata_t *pWaveData, int samplesToLoad)
 {
 	assert(pWaveData);
 
@@ -52,11 +52,17 @@ void Audio_load(char *fileName, wavedata_t *pWaveData)
 		exit(EXIT_FAILURE);
 	}
 
-	// Get file size
-	fseek(file, 0, SEEK_END);
-	int sizeInBytes = ftell(file) - DATA_OFFSET_INTO_WAVE;
-	fseek(file, DATA_OFFSET_INTO_WAVE, SEEK_SET);
-	pWaveData->numSamples = sizeInBytes / SAMPLE_SIZE;
+	int sizeInBytes;
+	if (samplesToLoad == -1) // Load them all.
+	{
+		// Get file size
+		fseek(file, 0, SEEK_END);
+		sizeInBytes = ftell(file) - DATA_OFFSET_INTO_WAVE;
+		pWaveData->numSamples = sizeInBytes / SAMPLE_SIZE;
+	} else {
+		sizeInBytes = samplesToLoad * SAMPLE_SIZE;
+		pWaveData->numSamples = samplesToLoad;
+	}
 
 	// Allocate Space
 	pWaveData->pData = malloc(sizeInBytes);
@@ -67,6 +73,7 @@ void Audio_load(char *fileName, wavedata_t *pWaveData)
 	}
 
 	// Read data:
+	fseek(file, DATA_OFFSET_INTO_WAVE, SEEK_SET);
 	int samplesRead = fread(pWaveData->pData, SAMPLE_SIZE, pWaveData->numSamples, file);
 	if (samplesRead != pWaveData->numSamples) {
 		fprintf(stderr, "ERROR: Unable to read %d samples from file %s (read %d).\n",
