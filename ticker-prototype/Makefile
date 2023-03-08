@@ -21,7 +21,7 @@ LFLAGS = -L$(HOME)/cmpt433/public/asound_lib_BBG
 # -pg for supporting gprof profiling.
 #CFLAGS += -pg
 
-all: wav ticker
+all: wav ticker State_test
 
 clean:
 	rm $(OUTDIR)/*
@@ -32,3 +32,6 @@ ticker:
 # Copy wav file
 wav:
 	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
+
+State_test: State.c State_test.c
+	gcc -g State.c State_test.c -o State_test
