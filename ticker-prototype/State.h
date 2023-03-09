@@ -10,8 +10,14 @@ typedef struct State
 #define DEFAULT_VOLUME 80
 #define DEFAULT_BEATSPERBAR 4
 
-void State_load();
-void State_save();
+#define MIN_BPM 1
+#define MIN_VOLUME 0
+#define MIN_BEATSPERBAR 1
+
+#define MAX_VOLUME 100
+
+void State_read();
+void State_write();
 
 int State_getVolume();
 int State_getBpm();

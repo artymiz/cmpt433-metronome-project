@@ -21,13 +21,17 @@ LFLAGS = -L$(HOME)/cmpt433/public/asound_lib_BBG
 # -pg for supporting gprof profiling.
 #CFLAGS += -pg
 
-all: wav ticker State_test
+all: wav Ticker_test State_test
 
 clean:
 	rm $(OUTDIR)/*
 
-ticker:
-	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
+Ticker_test:
+	touch $(OUTDIR)/state.bin
+	$(CC_C) $(CFLAGS) Audio.c State.c Ticker.c Ticker_test.c -o $(OUTDIR)/Ticker_test  $(LFLAGS) -lpthread -lasound
+
+# ticker:
+# 	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
 
 # Copy wav file
 wav:

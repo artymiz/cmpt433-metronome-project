@@ -6,7 +6,7 @@
 // and SHOULD FAIL afterwards.
 int main(int argc, char const *argv[])
 {
-    State_load();
+    State_read();
     
     // Good default values?
     assert(State_getBpm() == 120);
@@ -19,10 +19,10 @@ int main(int argc, char const *argv[])
 
     // Is state saved?
     State_setVolume(50);
-    State_save();
-    State_load();
+    State_write();
+    State_read();
     assert(State_getVolume() == 50);
-    State_save();
+    State_write();
 
     return 0;
 }

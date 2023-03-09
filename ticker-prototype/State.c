@@ -11,21 +11,22 @@ static State_t state = {
 static bool emptyFile(FILE *f)
 {
     fseek(f, 0, SEEK_END);
-    bool isEmpty = ftell(f) == 0;
+    bool isEmpty = (ftell(f) == 0);
     fseek(f, 0, SEEK_SET);
+    return isEmpty;
 }
 
-void State_load()
+void State_read()
 {
     FILE *fState = fopen("state.bin", "r");
-    if (emptyFile(fState)) 
+    if (!emptyFile(fState)) 
     {
         fread(&state, sizeof(State_t), 1, fState);
     }
     fclose(fState);
 }
 
-void State_save()
+void State_write()
 {
     FILE *fState = fopen("state.bin", "w");
     fwrite(&state, sizeof(State_t), 1, fState);
