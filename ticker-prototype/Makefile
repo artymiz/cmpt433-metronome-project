@@ -33,6 +33,8 @@ Ticker_test:
 # ticker:
 # 	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
 
+# TODO: should be able to copy the human-readable config file for the metronome and have it apply
+
 # Copy wav file
 wav:
 	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav

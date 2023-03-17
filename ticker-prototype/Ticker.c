@@ -16,11 +16,9 @@ static bool initialized = false;
 
 static void *tickerRoutine(void *args)
 {
-    puts("In tickerRoutine!");
     while (1)
     {
         int bpm = State_getBpm();
-        printf("bpm= %d\n", bpm);
         silence.numSamples = SAMPLE_RATE * (60.0 / bpm);
         Audio_play(&tick);
         Audio_play(&silence);
