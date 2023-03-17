@@ -56,5 +56,9 @@ void SPI_transfer(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int le
 
 int main(void)
 {
-    SPI_initPort(SPI_DEV_BUS0_CS0);
+    int spiFileDesc = SPI_initPort(SPI_DEV_BUS0_CS0);
+    uint8_t sendBuf[1];
+    sendBuf[0] = 0x29;
+    uint8_t receiveBuf[1];
+    SPI_transfer(spiFileDesc, sendBuf, receiveBuf, 1);
 }
