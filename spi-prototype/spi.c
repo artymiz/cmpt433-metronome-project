@@ -1,6 +1,9 @@
 #include <fcntl.h>
 #include <linux/spi/spidev.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ioctl.h>
 
 // Assume pins already configured for SPI
 // E.g. for SPI1, CS0:
@@ -53,5 +56,5 @@ void SPI_transfer(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int le
 
 int main(void)
 {
-    int spiFileDesc = SPI_initPort(SPI_DEV_BUS0_CS0);
+    SPI_initPort(SPI_DEV_BUS0_CS0);
 }
