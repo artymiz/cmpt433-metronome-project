@@ -110,6 +110,7 @@ int fd;
 ** store the ninth bit instead of the odd bytes */
 /* max of 19 parameters */
 /* page 34 of https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf describes the structure of data transmission. */
+/* using 3-line serial interface protocol (D/CX not used) */
 void writeCmd(int cmd, unsigned int *parameters, unsigned int numParam)
 {
     struct spi_ioc_transfer tr[2];
