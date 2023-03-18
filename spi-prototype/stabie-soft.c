@@ -15,80 +15,80 @@ typedef struct cmdStruct
 {
     char *name;
     unsigned char cmd;      /* the command byte code */
-    unsigned char w;        /* 1 write param, 2 is read */
-    unsigned char numParam; /* 255 is variable */
+    unsigned char w;        /* 1: write command, 0: read command*/
+    unsigned char numParam; /* 255 means variable number of parameters */
     unsigned char numDummy; /* For read commands */
 } cmdStruct;
 
 cmdStruct commands[] = {
-    {"NOOP", 0x0, 1, 0, 0},
-    {"RESET", 0x1, 1, 0, 0},
-    {"RDID", 0x4, 0, 3, 0},
-    {"RSTATUS", 0x9, 0, 4, 0},
-    {"RPWR", 0xa, 0, 1, 0},
-    {"RMAD", 0xb, 0, 1, 0},
-    {"RPixFmt", 0xc, 0, 1, 0},
-    {"RDImFmt", 0xd, 0, 1, 0},
-    {"RSigMde", 0xe, 0, 1, 0},
-    {"RDiag", 0xf, 0, 1, 0},
-    {"Sleep", 0x10, 1, 0, 0},
-    {"Wake", 0x11, 1, 0, 0},
-    {"Partial", 0x12, 1, 0, 0},
-    {"Normal", 0x13, 1, 0, 0},
-    {"InvOff", 0x20, 1, 0, 0},
-    {"InvOn", 0x21, 1, 0, 0},
+    {"NOOP",     0x0, 1, 0, 0},
+    {"RESET",    0x1, 1, 0, 0},
+    {"RDID",     0x4, 0, 3, 0},
+    {"RSTATUS",  0x9, 0, 4, 0},
+    {"RPWR",     0xa, 0, 1, 0},
+    {"RMAD",     0xb, 0, 1, 0},
+    {"RPixFmt",  0xc, 0, 1, 0},
+    {"RDImFmt",  0xd, 0, 1, 0},
+    {"RSigMde",  0xe, 0, 1, 0},
+    {"RDiag",    0xf, 0, 1, 0},
+    {"Sleep",    0x10, 1, 0, 0},
+    {"Wake",     0x11, 1, 0, 0},
+    {"Partial",  0x12, 1, 0, 0},
+    {"Normal",   0x13, 1, 0, 0},
+    {"InvOff",   0x20, 1, 0, 0},
+    {"InvOn",    0x21, 1, 0, 0},
     {"GammaSet", 0x26, 1, 1, 0},
-    {"DOff", 0x28, 1, 0, 0},
-    {"DOn", 0x29, 1, 0, 0},
-    {"ColSet", 0x2a, 1, 4, 0},
-    {"RowSet", 0x2b, 1, 4, 0},
-    {"MemWrt", 0x2c, 1, 255, 0},
-    {"ClrSet", 0x2d, 1, 9, 0},
-    {"MemRd", 0x2e, 0, 255, 9},
-    {"ParArea", 0x30, 1, 4, 0},
-    {"VScroll", 0x33, 1, 6, 0},
-    {"TearOff", 0x34, 1, 0, 0},
-    {"TearOn", 0x35, 1, 1, 0},
-    {"MemAcc", 0x36, 1, 1, 0},
-    {"VscrollStart", 0x37, 1, 2, 0},
-    {"IdleOff", 0x38, 1, 0, 0},
-    {"IdleOn", 0x39, 1, 0, 0},
-    {"PixFmt", 0x3a, 1, 1, 0},
-    {"MemWrtC", 0x3c, 1, 255, 0},
-    {"MemRdC", 0x3e, 0, 255, 9},
-    {"SetTear", 0x44, 1, 2, 0},
+    {"DOff",     0x28, 1, 0, 0},
+    {"DOn",      0x29, 1, 0, 0},
+    {"ColSet",   0x2a, 1, 4, 0},
+    {"RowSet",   0x2b, 1, 4, 0},
+    {"MemWrt",   0x2c, 1, 255, 0},
+    {"ClrSet",   0x2d, 1, 9, 0},
+    {"MemRd",    0x2e, 0, 255, 9},
+    {"ParArea",  0x30, 1, 4, 0},
+    {"VScroll",  0x33, 1, 6, 0},
+    {"TearOff",  0x34, 1, 0, 0},
+    {"TearOn",   0x35, 1, 1, 0},
+    {"MemAcc",   0x36, 1, 1, 0},
+    {"VscrollStart",     0x37, 1, 2, 0},
+    {"IdleOff",  0x38, 1, 0, 0},
+    {"IdleOn",   0x39, 1, 0, 0},
+    {"PixFmt",   0x3a, 1, 1, 0},
+    {"MemWrtC",  0x3c, 1, 255, 0},
+    {"MemRdC",   0x3e, 0, 255, 9},
+    {"SetTear",  0x44, 1, 2, 0},
     {"GetScanL", 0x45, 0, 2, 1},
-    {"DBright", 0x51, 1, 1, 0},
+    {"DBright",  0x51, 1, 1, 0},
     {"RDBright", 0x52, 0, 1, 1},
     {"CTRLDisp", 0x53, 1, 1, 0},
-    {"RCTRLDisp", 0x54, 0, 1, 0},
-    {"CACBright", 0x55, 1, 1, 0},
-    {"RCACBright", 0x56, 0, 1, 1},
+    {"RCTRLDisp",0x54, 0, 1, 0},
+    {"CACBright",0x55, 1, 1, 0},
+    {"RCACBright",   0x56, 0, 1, 1},
     {"CACMinBright", 0x5e, 1, 1, 0},
-    {"RCACMinBright", 0x5f, 0, 1, 1},
-    {"RID1", 0xda, 0, 1, 1},
-    {"RID2", 0xdb, 0, 1, 1},
-    {"RID3", 0xdc, 0, 1, 1},
-    {"RGBIf", 0xb0, 1, 1, 0},
-    {"FmCtlN", 0xb1, 1, 2, 0},
-    {"FmCtlI", 0xb2, 1, 2, 0},
-    {"FmCtlP", 0xb3, 1, 2, 0},
-    {"DispInv", 0xb4, 1, 1, 0},
-    {"BlkPorch", 0xb5, 1, 4, 0},
-    {"DispFuncCtl", 0xb6, 1, 4, 0},
-    {"EntryMode", 0xb7, 1, 1, 0},
-    {"BLight1", 0xb8, 1, 1, 0},
-    {"BLight2", 0xb9, 1, 1, 0},
-    {"BLight3", 0xba, 1, 1, 0},
-    {"BLight4", 0xbb, 1, 1, 0},
-    {"BLight5", 0xbc, 1, 1, 0},
-    {"BLight7", 0xbe, 1, 1, 0},
-    {"BLight8", 0xbf, 1, 1, 0},
-    {"PwrCtl1", 0xc0, 1, 2, 0},
-    {"PwrCtl2", 0xc1, 1, 1, 0},
-    {"PwrCtl3", 0xc2, 1, 1, 0},
-    {"PwrCtl4", 0xc3, 1, 1, 0},
-    {"PwrCtl5", 0xc4, 1, 1, 0},
+    {"RCACMinBright",0x5f, 0, 1, 1},
+    {"RID1",     0xda, 0, 1, 1},
+    {"RID2",     0xdb, 0, 1, 1},
+    {"RID3",     0xdc, 0, 1, 1},
+    {"RGBIf",    0xb0, 1, 1, 0},
+    {"FmCtlN",   0xb1, 1, 2, 0},
+    {"FmCtlI",   0xb2, 1, 2, 0},
+    {"FmCtlP",   0xb3, 1, 2, 0},
+    {"DispInv",  0xb4, 1, 1, 0},
+    {"BlkPorch",     0xb5, 1, 4, 0},
+    {"DispFuncCtl",  0xb6, 1, 4, 0},
+    {"EntryMode",    0xb7, 1, 1, 0},
+    {"BLight1",  0xb8, 1, 1, 0},
+    {"BLight2",  0xb9, 1, 1, 0},
+    {"BLight3",  0xba, 1, 1, 0},
+    {"BLight4",  0xbb, 1, 1, 0},
+    {"BLight5",  0xbc, 1, 1, 0},
+    {"BLight7",  0xbe, 1, 1, 0},
+    {"BLight8",  0xbf, 1, 1, 0},
+    {"PwrCtl1",  0xc0, 1, 2, 0},
+    {"PwrCtl2",  0xc1, 1, 1, 0},
+    {"PwrCtl3",  0xc2, 1, 1, 0},
+    {"PwrCtl4",  0xc3, 1, 1, 0},
+    {"PwrCtl5",  0xc4, 1, 1, 0},
     {"VComCtl1", 0xc5, 1, 2, 0},
     {"VComCtl2", 0xc7, 1, 1, 0},
     {NULL, 0, 0, 0}};
@@ -111,7 +111,7 @@ int fd;
 /* len to spi is 2X size since we are writing 9 bits. Note due to ARM byte order, even bytes
 ** store the ninth bit instead of the odd bytes */
 /* max of 19 parameters */
-writeCmd(int cmd, unsigned int *parameters, unsigned int numParam)
+void writeCmd(int cmd, unsigned int *parameters, unsigned int numParam)
 {
     struct spi_ioc_transfer tr[2];
     unsigned char tx[40];
@@ -133,7 +133,7 @@ writeCmd(int cmd, unsigned int *parameters, unsigned int numParam)
         pabort("can't send spi message");
 }
 
-writePixels(unsigned char cmd, int numPixels, unsigned char *red, unsigned char *green, unsigned char *blue)
+void writePixels(unsigned char cmd, int numPixels, unsigned char *red, unsigned char *green, unsigned char *blue)
 {
     static unsigned char buf[4096]; /* 682 pixels x 3 + 1(for wr cmd) *2 for 2 bytes per byte */
     struct spi_ioc_transfer tr[2];
@@ -160,7 +160,7 @@ writePixels(unsigned char cmd, int numPixels, unsigned char *red, unsigned char 
         pabort("can't send spi message");
 }
 
-writeRepeatedPixels(int numPixels, unsigned char red, unsigned char green, unsigned char blue)
+void writeRepeatedPixels(int numPixels, unsigned char red, unsigned char green, unsigned char blue)
 {
     unsigned char rbuf[682], gbuf[682], bbuf[682];
     unsigned char cmd;
@@ -183,7 +183,7 @@ writeRepeatedPixels(int numPixels, unsigned char red, unsigned char green, unsig
 /* Pixel reads can use the continue command to continue reading pixels */
 /* numBitSkip is how many bits should be ignored on the read back */
 /* A memory read skips 9 clocks for example, and a 0x09 skips 1. */
-readRegister(int cmd, int numRX, int numBitSkip)
+void readRegister(int cmd, int numRX, int numBitSkip)
 {
     struct spi_ioc_transfer tr[2];
     unsigned char tx[20];
@@ -216,7 +216,7 @@ readRegister(int cmd, int numRX, int numBitSkip)
     if (bitIndex1 == 0) /* Easy just return as is */
     {
         for (i = 0; i < numRX; i++)
-            printf(" %x", rx[i + byteIndex]);
+            printf(" %x",    rx[i + byteIndex]);
     }
     else
     { /* Must shift */
@@ -229,7 +229,7 @@ readRegister(int cmd, int numRX, int numBitSkip)
         {
             byte = (byteMask1 & rx[i + byteIndex]) << bitIndex1;
             byte = byte | (byteMask2 & (rx[i + 1 + byteIndex] >> bitIndex2));
-            printf(" %x", byte);
+            printf(" %x",    byte);
         }
     }
     printf("\n");
@@ -277,9 +277,9 @@ int main(int argc, char *argv[])
     if (ret == -1)
         pabort("can't get max speed hz");
 
-    printf("mode: %d\n", mode);
-    printf("bits per word: %d\n", bits);
-    printf("max speed: %d Hz (%d KHz)\n", speed, speed / 1000);
+    printf("mode: %d\n",     mode);
+    printf("bits per word: %d\n",    bits);
+    printf("max speed: %d Hz (%d KHz)\n",    speed, speed / 1000);
     printf("Calling init routine\n");
 
     printf("Reset\n");
@@ -294,58 +294,64 @@ int main(int argc, char *argv[])
     readRegister(0x09, 5, 0);
 
     printf(" Command hex value to execute : ");
-    while (scanf("%x", &cmd) == 1)
+    while (scanf("%x",   &cmd) == 1)
     {
+        // Loops through commands until the correct
+        // command is found (i is set).
         for (i = 0; commands[i].name; i++)
             if (commands[i].cmd == cmd)
                 break;
+
         if (commands[i].name == NULL)
         {
             printf("Unknown command\n");
             printf(" Command hex value to execute : ");
             continue;
         }
+
         if (commands[i].w == 0)
         { /* Read command */
             if (commands[i].numParam == 255)
             {
-                printf("Number to retrieve for %s ", commands[i].name);
-                if (scanf("%x", &cnt) != 1)
+                printf("Number to retrieve for %s ",     commands[i].name);
+                if (scanf("%x",  &cnt) != 1)
                     exit(0);
                 readRegister(cmd, cnt, commands[i].numDummy);
             }
             else
             {
-                printf("Result of %s read :", commands[i].name);
+                printf("Result of %s read :",    commands[i].name);
                 readRegister(cmd, commands[i].numParam, commands[i].numDummy);
             }
         }
+
+        // commands[i].w == 1, Write command
         else
         {
             if (commands[i].numParam == 0)
             {
-                printf("Execute %s\n", commands[i].name);
+                printf("Execute %s\n",   commands[i].name);
                 writeCmd(cmd, NULL, 0);
             }
             else if (commands[i].numParam != 255)
             { /* Pixels are always just written as groups of BGR */
-                printf("Collect parameters for %s\n", commands[i].name);
+                printf("Collect parameters for %s\n",    commands[i].name);
                 for (cnt = 0; cnt < commands[i].numParam; cnt++)
                 {
-                    printf("Param #%d : ", cnt);
-                    if (scanf("%x", &values[cnt]) != 1)
+                    printf("Param #%d : ",   cnt);
+                    if (scanf("%x",  &values[cnt]) != 1)
                         exit(0);
                     writeCmd(cmd, values, commands[i].numParam);
                 }
             }
             else
             { /* Pixels */
-                printf("Collect pixels for %s\n", commands[i].name);
+                printf("Collect pixels for %s\n",    commands[i].name);
                 printf("RepeatTransmit bytes(BGR) : ");
-                if (scanf("%x %x %x", &values[0], &values[1], &values[2]) != 3)
+                if (scanf("%x %x %x",    &values[0], &values[1], &values[2]) != 3)
                     exit(0);
                 printf("How many repititions : ");
-                if (scanf("%d", &cnt) != 1)
+                if (scanf("%d",  &cnt) != 1)
                     exit(0);
                 writeRepeatedPixels(cnt, values[0], values[1], values[2]);
             }
