@@ -109,6 +109,7 @@ int fd;
 /* len to spi is 2X size since we are writing 9 bits. Note due to ARM byte order, even bytes
 ** store the ninth bit instead of the odd bytes */
 /* max of 19 parameters */
+/* page 34 of https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf describes the structure of data transmission. */
 void writeCmd(int cmd, unsigned int *parameters, unsigned int numParam)
 {
     struct spi_ioc_transfer tr[2];
@@ -118,7 +119,7 @@ void writeCmd(int cmd, unsigned int *parameters, unsigned int numParam)
     memset(tr, 0, sizeof(struct spi_ioc_transfer) * 2);
     tr[0].tx_buf = (unsigned long)tx;
     tr[0].len = 2 * (1 + numParam);
-    tx[1] = 0; /* A command so first bit is 0 */
+    tx[1] = 0; /* A command so first bit is 0 -- D/C (data/command) select bit */
     tx[0] = cmd & 0xff;
     for (i = 0, j = 2; i < numParam; i++)
     {
@@ -181,7 +182,7 @@ void writeRepeatedPixels(int numPixels, unsigned char red, unsigned char green, 
 /* Pixel reads can use the continue command to continue reading pixels */
 /* numBitSkip is how many bits should be ignored on the read back */
 /* A memory read skips 9 clocks for example, and a 0x09 skips 1. */
-void readRegister(int cmd, int numRX, int numBitSkip)
+void readCmd(int cmd, int numRX, int numBitSkip)
 {
     struct spi_ioc_transfer tr[2];
     unsigned char tx[20];
@@ -289,7 +290,7 @@ int main(int argc, char *argv[])
     printf("Display on\n");
     writeCmd(0x29, NULL, 0);
     printf("Write command to read display status\n");
-    readRegister(0x09, 5, 0);
+    readCmd(0x09, 5, 0);
 
     printf(" Command hex value to execute : ");
     while (scanf("%x",   &cmd) == 1)
@@ -314,12 +315,12 @@ int main(int argc, char *argv[])
                 printf("Number to retrieve for %s ",     commands[i].name);
                 if (scanf("%x",  &cnt) != 1)
                     exit(0);
-                readRegister(cmd, cnt, commands[i].numDummy);
+                readCmd(cmd, cnt, commands[i].numDummy);
             }
             else
             {
                 printf("Result of %s read :",    commands[i].name);
-                readRegister(cmd, commands[i].numParam, commands[i].numDummy);
+                readCmd(cmd, commands[i].numParam, commands[i].numDummy);
             }
         }
 
