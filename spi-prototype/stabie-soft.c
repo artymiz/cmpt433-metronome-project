@@ -104,8 +104,6 @@ static const char *device = "/dev/spidev1.0";
 static uint8_t mode = 0;
 static uint8_t bits = 9;
 static uint32_t speed = 5000000;
-static uint16_t delay;
-static int verbose;
 int fd;
 
 /* len to spi is 2X size since we are writing 9 bits. Note due to ARM byte order, even bytes
@@ -190,7 +188,7 @@ void readRegister(int cmd, int numRX, int numBitSkip)
     unsigned char rx[4096], txrx[4096];
     int bitIndex1, bitIndex2, byteIndex;
     unsigned int byteMask1, byteMask2, byte;
-    int i, j, ret;
+    int i, ret;
 
     memset(tr, 0, sizeof(struct spi_ioc_transfer) * 2);
     tr[0].tx_buf = (unsigned long)tx;
