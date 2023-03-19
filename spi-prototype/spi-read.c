@@ -6,16 +6,20 @@
 #include <sys/ioctl.h>
 
 // Assume pins already configured for SPI
-// E.g. for SPI1, CS0:
-// (bbg)$ config-pin P9_28 spi_cs
-// (bbg)$ config-pin P9_31 spi_sclk
-// (bbg)$ config-pin P9_29 spi
-// (bbg)$ config-pin P9_30 spi
+// E.g. for SPI0, CS0:
+/*
+config-pin P9_17 spi_cs
+config-pin P9_22 spi_sclk
+config-pin P9_18 spi
+config-pin P9_21 spi
+*/
 #define SPI_DEV_BUS0_CS0 "/dev/spidev0.0"
 #define SPI_DEV_BUS1_CS0 "/dev/spidev1.0"
 #define SPI_DEV_BUS1_CS1 "/dev/spidev1.1"
 #define SPI_MODE_DEFAULT 0
 #define SPEED_HZ_DEFAULT 500000 // Arbitrary, but 500000 is reasonable
+
+#define READ_POWER_MODE 0x0A
 
 int SPI_initPort(char* spiDevice)
 {
@@ -48,6 +52,7 @@ void SPI_transfer(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int le
     };
 
     const int NUM_TRANSFERS = 1;
+    // SPI_IOC_MESSAGE does https://linuxtv.org/downloads/v4l-dvb-internals/device-drivers/API-spi-sync.html
     int status = ioctl(spiFileDesc, SPI_IOC_MESSAGE(NUM_TRANSFERS), &transfer);
     if (status < 0) {
         printf("Error: SPI Transfer failed\n");
@@ -57,8 +62,17 @@ void SPI_transfer(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int le
 int main(void)
 {
     int spiFileDesc = SPI_initPort(SPI_DEV_BUS0_CS0);
-    uint8_t sendBuf[1];
-    sendBuf[0] = 0x29;
-    uint8_t receiveBuf[1];
-    SPI_transfer(spiFileDesc, sendBuf, receiveBuf, 1);
+    uint32_t send = 0b000001010 << (32 - 9); // assuming MSB first, 9 bits. 00001010 is the command, one leading zero added.
+    uint32_t receive = 0xFF;
+    struct spi_ioc_transfer transfer = {
+        .tx_buf = (unsigned long)&send,
+        .rx_buf = (unsigned long)&receive,
+        .len = 4
+    };
+    int status = ioctl(spiFileDesc, SPI_IOC_MESSAGE(1), &transfer);
+    if (status < 0) {
+        printf("Error: SPI Transfer failed\n");
+    }
+    printf("send = %x", send);
+    printf("receive = %x", receive);
 }

@@ -100,7 +100,7 @@ static void pabort(const char *s)
     abort();
 }
 
-static const char *device = "/dev/spidev1.0";
+static const char *device = "/dev/spidev0.0";
 static uint8_t mode = 0;
 static uint8_t bits = 9;
 static uint32_t speed = 5000000;
