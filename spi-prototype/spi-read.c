@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <string.h>
+#include <time.h>
 #include "GPIO.h"
 
 // Assume pins already configured for SPI
@@ -26,6 +28,15 @@ config-pin P9_21 spi
 #define SPEED_HZ_DEFAULT 500000
 
 #define READ_POWER_MODE 0x0A
+
+void delayMs(long long ms)
+{
+    const long long NS_PER_MS = 1000000;
+    const long long NS_PER_SECOND = 1000000000;
+    long long ns = ms * NS_PER_MS;
+    struct timespec ts = {ns / NS_PER_SECOND, ns % NS_PER_SECOND};
+    nanosleep(&ts, (struct timespec *)NULL);
+}
 
 int SPI_initPort(char* spiDevice)
 {
@@ -65,36 +76,59 @@ void SPI_transfer(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int le
     }
 }
 
-int main(void)
+void printbuf(uint8_t *buf, int length)
 {
-    // int spiFileDesc = SPI_initPort(SPI_DEV_BUS0_CS0);
-    // uint32_t send = 0b000001010 << (32 - 9); // assuming MSB first, 9 bits. 00001010 is the command, one leading zero added.
-    // uint32_t receive = 0xFF;
-    // struct spi_ioc_transfer transfer = {
-    //     .tx_buf = (unsigned long)&send,
-    //     .rx_buf = (unsigned long)&receive,
-    //     .len = 4
-    // };
-    // int status = ioctl(spiFileDesc, SPI_IOC_MESSAGE(1), &transfer);
-    // if (status < 0) {
-    //     printf("Error: SPI Transfer failed\n");
-    // }
-    // printf("send = %x", send);
-    // printf("receive = %x", receive);
-    
-    // Setup D/C pin
+    for (size_t i = 0; i < length; i++) {
+        printf("%02x ", buf[i]);
+    }
+    printf("\n");
+}
+
+int main(void)
+{    
+    // Setup D/C pin, set it LOW
     gpioInfo_t selectDataOrCommand = {.pin={.header=9, .number=23}, .gpioNumber=49};
     GPIO_usePin(&selectDataOrCommand, "out");
     GPIO_setValue(&selectDataOrCommand, false);
 
     int spiFileDesc = SPI_initPort(SPI_DEV_BUS0_CS0);
-    
-    // Read display power mode (0xA)
-    char sendBuf[2];
-    sendBuf[0] = 0xA;
-    char receiveBuf[2];
-    SPI_transfer(spiFileDesc, sendBuf, receiveBuf, 2);
-    printf("receiveBuf[1] = %x\n", receiveBuf[1]);
+    uint8_t txBuf[3];
+    uint8_t rxBuf[3];
+
+    /* ---- Run initialization commands ---- */
+
+    // memset(txBuf, 0, 3);
+    // memset(rxBuf, 0, 3);
+    // txBuf[0] = 0x11; // wake up
+    // SPI_transfer(spiFileDesc, txBuf, rxBuf, 3);
+    // // printbuf(txBuf, 3);
+    // // printbuf(rxBuf, 3);
+    // delayMs(5);
+
+    // memset(txBuf, 0, 3);
+    // memset(rxBuf, 0, 3);
+    // txBuf[0] = 0x29; // turn on display
+    // SPI_transfer(spiFileDesc, txBuf, rxBuf, 3);
+    // // printbuf(txBuf, 3);
+    // // printbuf(rxBuf, 3);
+
+    /* ---- Read info ---- */
+
+    // Read display power mode (0xA): getting back 00 08 00 (display is ON)
+    memset(txBuf, 0, 3);
+    memset(rxBuf, 0, 3);
+    txBuf[0] = 0xA;
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 3);
+    // printbuf(txBuf, 3);
+    printbuf(rxBuf, 3);
+
+    // Read display status (0x9): getting back 00 00 30 (18 bits / pixel)
+    memset(txBuf, 0, 3);
+    memset(rxBuf, 0, 3);
+    txBuf[0] = 0x9;
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 3);
+    // printbuf(txBuf, 3);
+    printbuf(rxBuf, 3);
 
     return 0;
 }

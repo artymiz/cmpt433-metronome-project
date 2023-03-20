@@ -46,4 +46,10 @@ FREE PINS FROM https://opencoursehub.cs.sfu.ca/bfraser/grav-cms/cmpt433/guides/f
 • P9-15 = Linux #48
 • P9-23 = Linux #49
 
-- 4-line serial interface reads 8 for 0xA command! This is the expected result! Is it a fluke?
+- 4-line serial interface reads 8 for 0xA command! This only happends when D/C pin is set LOW. 
+
+- Nothing is working as expected, maybe the dummy return byte actually means that i'm reading one byte early? Nope, the 3rd byte is empty. 
+
+- I think everything is actually ok, in terms of the wiring and the protocol setup, because the bytes that are being read look right,
+and running vs. commenting  out  the initialization code lines changes the output of the state read!
+
