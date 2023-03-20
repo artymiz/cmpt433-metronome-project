@@ -103,7 +103,7 @@ static void pabort(const char *s)
 static const char *device = "/dev/spidev0.0";
 static uint8_t mode = 0;
 static uint8_t bits = 9;
-static uint32_t speed = 5000000;
+static uint32_t speed = 500000;
 int fd;
 
 /* len to spi is 2X size since we are writing 9 bits. Note due to ARM byte order, even bytes

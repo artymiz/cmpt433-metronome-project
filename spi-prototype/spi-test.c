@@ -11,6 +11,15 @@
  * Cross-compile with cross-gcc -I/path/to/cross-kernel/include
  */
 
+// Assume pins already configured for SPI
+// E.g. for SPI0, CS0:
+/*
+config-pin P9_17 spi_cs
+config-pin P9_22 spi_sclk
+config-pin P9_18 spi
+config-pin P9_21 spi
+*/
+
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -29,7 +38,7 @@ static void pabort(const char *s)
 	abort();
 }
 
-static const char *device = "/dev/spidev1.0";
+static const char *device = "/dev/spidev0.0";
 static uint8_t mode;
 static uint8_t bits = 8;
 static uint32_t speed = 500000;
@@ -72,7 +81,7 @@ static void transfer(int fd)
 static void print_usage(const char *prog)
 {
 	printf("Usage: %s [-DsbdlHOLC3]\n", prog);
-	puts("  -D --device   device to use (default /dev/spidev1.1)\n"
+	puts("  -D --device   device to use (default /dev/spidev0.0)\n"
 	     "  -s --speed    max speed (Hz)\n"
 	     "  -d --delay    delay (usec)\n"
 	     "  -b --bpw      bits per word \n"
