@@ -234,5 +234,40 @@ int main(void)
     txBuf[0] = 0x00; // NOP
     SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
 
+    delayMs(2000);
+
+    ///////////////////////////////////////////////
+
+    // Memory write command (0x2C), 
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x2C;
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+
+    for (size_t i = 0; i < 64; i++) // 320 / 5 = 64: make the screen torquoise.
+    {
+        // Send data: D/C high and 20 lines of black
+        // 3 * 240 bytes (240 pixels) = 720 bytes per line
+        #define LINEBYTES 720
+        #define NUMLINES 5 // 20  gives "Error: SPI Transfer failed: Message too long"
+        #define DATABUFLEN LINEBYTES * NUMLINES // 5 lines
+        uint8_t databuf[DATABUFLEN];
+        memset(databuf, 0, DATABUFLEN);
+        for (size_t j = 0; j < DATABUFLEN; j+=3) // BGR!
+        {
+            databuf[j] = 0xFF;
+            databuf[j+1] = 0xFF;
+        }
+        GPIO_setValue(&selectData, true);
+        SPI_transfer(spiFileDesc, databuf, NULL, DATABUFLEN);
+    }
+
+    // Signal end of data transmission by sending any command. NEED THIS OTHERWISE CONTINUES FILLING REST OF SCREEN.
+    GPIO_setValue(&selectData, false);
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x00; // NOP
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+
     return 0;
 }
