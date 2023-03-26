@@ -74,4 +74,38 @@ debian@BeagleBone:/mnt/remote$ sudo ./spi-read
 *3/25*
 
 THE RESET PIN IS STRONG
-- connecting rst to gpio at some value made ./spi-read give all zeroes (just like when we couldn't get anything to work in the beginning) 
+- Setting reset to low makes ./spi-read give all zeroes (just like when we couldn't get anything to work in the beginning) 
+
+ABLE TO WRITE DATA TO THE DISPLAY!
+```
+/* ---- Write image data ---- */ 
+    
+    // Memory write command (0x2C), 
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x2C;
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+
+    for (size_t i = 0; i < 32; i++) // 320 / 5 = 64: make half the screen black.
+    {
+        // Send data: D/C high and 20 lines of black
+        // 3 * 240 bytes (240 pixels) = 720 bytes per line
+        #define LINEBYTES 720
+        #define NUMLINES 5 // 20  gives "Error: SPI Transfer failed: Message too long"
+        #define DATABUFLEN LINEBYTES * NUMLINES
+        uint8_t databuf[DATABUFLEN];
+        memset(databuf, 0, DATABUFLEN);
+        GPIO_setValue(&selectData, true);
+        SPI_transfer(spiFileDesc, databuf, NULL, DATABUFLEN);
+    }
+    
+    // Signal end of data transmission by sending any command.
+    GPIO_setValue(&selectData, false);
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x00; // NOP
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+```
+
+- It is critical that Memory write command and NOP command are outside of the for loop, otherwise it will repeatedly
+draw the first 5 lines instead of drawing half the screen.
