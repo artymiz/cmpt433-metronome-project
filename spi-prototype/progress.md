@@ -75,6 +75,7 @@ debian@BeagleBone:/mnt/remote$ sudo ./spi-read
 
 THE RESET PIN IS STRONG
 - Setting reset to low makes ./spi-read give all zeroes (just like when we couldn't get anything to work in the beginning) 
+- Setup Reset pin: set it HIGH, then set it LOW for 10 microseconds (to reset), then HIGH. The reset pin works! Use the reset pulse to clear the screen, I don't know what else it does. 
 
 ABLE TO WRITE DATA TO THE DISPLAY!
 ```
@@ -109,3 +110,8 @@ ABLE TO WRITE DATA TO THE DISPLAY!
 
 - It is critical that Memory write command and NOP command are outside of the for loop, otherwise it will repeatedly
 draw the first 5 lines instead of drawing half the screen.
+
+- Data can only be overwritten: if you send an empty data write command it will not clear memory.
+- Data does not persist after power disconnected, or after HW reset.
+
+- Data is drawn as it is being sent: it's not like it gets stored in a buffer and updated when the NOP command is sent.
