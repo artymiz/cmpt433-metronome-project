@@ -54,7 +54,7 @@ int SPI_initPort(char* spiDevice)
     int spiMode = SPI_MODE_DEFAULT;
     int err = ioctl(spiFileDesc, SPI_IOC_WR_MODE, &spiMode);
     if (err < 0) {
-        printf("Error: Set SPI mode failed\n");
+        perror("Error: Set SPI mode failed\n");
         exit(1);
     }
 
@@ -74,7 +74,7 @@ void SPI_transfer(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int le
     // SPI_IOC_MESSAGE does https://linuxtv.org/downloads/v4l-dvb-internals/device-drivers/API-spi-sync.html
     int status = ioctl(spiFileDesc, SPI_IOC_MESSAGE(NUM_TRANSFERS), &transfer);
     if (status < 0) {
-        printf("Error: SPI Transfer failed\n");
+        perror("Error: SPI Transfer failed");
     }
 }
 
@@ -88,49 +88,89 @@ void printbuf(uint8_t *buf, int length)
 
 int main(void)
 {    
-    // Setup D/C pin, set it LOW
-    gpioInfo_t selectDataOrCommand = {.pin={.header=9, .number=23}, .gpioNumber=49};
-    GPIO_usePin(&selectDataOrCommand, "out");
-    GPIO_setValue(&selectDataOrCommand, false);
+    // Setup D/C pin, set it LOW.
+    gpioInfo_t selectData = {.pin={.header=9, .number=23}, .gpioNumber=49};
+    GPIO_usePin(&selectData, "out");
+    GPIO_setValue(&selectData, false);
+
+    /* ---- Power on sequence ---- */
+    // Based on: https://cdn-shop.adafruit.com/datasheets/TM022HDH26_V1.0.pdf page 13.
+
+    // Setup Reset pin: set it HIGH, then set it LOW for 10 microseconds (to reset), then HIGH.
+    // Based on: https://cdn-shop.adafruit.com/datasheets/TM022HDH26_V1.0.pdf page 12.
+    gpioInfo_t reset = {.pin={.header=8, .number=10}, .gpioNumber=68};
+    GPIO_usePin(&reset, "out");
+    GPIO_setValue(&reset, true);
+    delayMs(100);
+    GPIO_setValue(&reset, false);
+    delayMs(10);
+    GPIO_setValue(&reset, true);
+    delayMs(20);
 
     int spiFileDesc = SPI_initPort(SPI_DEV_BUS0_CS0);
-    uint8_t txBuf[3];
-    uint8_t rxBuf[3];
+    // 0x9 returns 4 bytes, and the first byte is not going to get written to, so we need buffer of size BUFFSIZE
+    #define BUFFSIZE 5
+    uint8_t txBuf[BUFFSIZE];
+    uint8_t rxBuf[BUFFSIZE];
 
-    /* ---- Run initialization commands ---- */
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x11; // wake up
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+    delayMs(60);
 
-    // memset(txBuf, 0, 3);
-    // memset(rxBuf, 0, 3);
-    // txBuf[0] = 0x11; // wake up
-    // SPI_transfer(spiFileDesc, txBuf, rxBuf, 3);
-    // // printbuf(txBuf, 3);
-    // // printbuf(rxBuf, 3);
-    // delayMs(5);
-
-    // memset(txBuf, 0, 3);
-    // memset(rxBuf, 0, 3);
-    // txBuf[0] = 0x29; // turn on display
-    // SPI_transfer(spiFileDesc, txBuf, rxBuf, 3);
-    // // printbuf(txBuf, 3);
-    // // printbuf(rxBuf, 3);
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x29; // turn on display
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
 
     /* ---- Read info ---- */
 
-    // Read display power mode (0xA): getting back 00 08 00 (display is ON)
-    memset(txBuf, 0, 3);
-    memset(rxBuf, 0, 3);
+    // Read display power mode (0xA): getting back 00 9c 00 00 00 with updated power on sequence.
+    // 9c (1 byte return), -> 10011100 which means (MSB first)
+    // Booster OK, Sleep OUT, Normal mode, Display ON
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
     txBuf[0] = 0xA;
-    SPI_transfer(spiFileDesc, txBuf, rxBuf, 3);
-    // printbuf(txBuf, 3);
-    printbuf(rxBuf, 3);
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, BUFFSIZE);
+    printbuf(rxBuf, BUFFSIZE);
 
-    // Read display status (0x9): getting back 00 00 30 (18 bits / pixel)
-    memset(txBuf, 0, 3);
-    memset(rxBuf, 0, 3);
+    // Read display status (0x9): getting back 00 c0 31 82 00.
+    // c0 31 82 00 (4 byte return) -> 11000000 00110001 10000010 00000000 which means
+    // Booster ON, Bottom to Top row address order, 18-bit/pixel, Normal mode on, Tearing effect line ON
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
     txBuf[0] = 0x9;
-    SPI_transfer(spiFileDesc, txBuf, rxBuf, 3);
-    // printbuf(txBuf, 3);
-    printbuf(rxBuf, 3);
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, BUFFSIZE);
+    printbuf(rxBuf, BUFFSIZE);
 
+    /* ---- Write image data ---- */ 
+    
+    // Memory write command (0x2C), 
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x2C;
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+
+    for (size_t i = 0; i < 32; i++) // 320 / 5 = 64: make half the screen black.
+    {
+        // Send data: D/C high and 20 lines of black
+        // 3 * 240 bytes (240 pixels) = 720 bytes per line
+        #define LINEBYTES 720
+        #define NUMLINES 5 // 20  gives "Error: SPI Transfer failed: Message too long"
+        #define DATABUFLEN LINEBYTES * NUMLINES
+        uint8_t databuf[DATABUFLEN];
+        memset(databuf, 0, DATABUFLEN);
+        GPIO_setValue(&selectData, true);
+        SPI_transfer(spiFileDesc, databuf, NULL, DATABUFLEN);
+    }
+    
+    // Signal end of data transmission by sending any command.
+    GPIO_setValue(&selectData, false);
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x00; // NOP
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+    
     return 0;
 }

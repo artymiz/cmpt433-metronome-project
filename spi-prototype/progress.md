@@ -70,3 +70,8 @@ debian@BeagleBone:/mnt/remote$ sudo ./spi-read
 ```
 
 4-LINE SERIAL INTERFACE WORKS
+
+*3/25*
+
+THE RESET PIN IS STRONG
+- connecting rst to gpio at some value made ./spi-read give all zeroes (just like when we couldn't get anything to work in the beginning) 

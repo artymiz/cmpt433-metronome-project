@@ -1,0 +1,6 @@
+config-pin P9_17 spi_cs     # CS (chip select)
+config-pin P9_18 spi        # MOSI (master out slave in)
+config-pin P9_21 spi        # MISO (master in slave out)
+config-pin P9_22 spi_sclk   # CLK (clock)
+config-pin P9_23 gpio       # D/C (data/command)
+config-pin P8_10 gpio       # RST (reset)
