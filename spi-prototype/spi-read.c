@@ -15,7 +15,8 @@
 #include <time.h>
 #include "GPIO.h"
 
-// Assume pins already configured for SPI
+// Assume pins already configured for SPI and GPIO (Reset, D/C).
+// To do this, run `config-pin-script.sh`.
 // E.g. for SPI0, CS0:
 /*
 config-pin P9_17 spi_cs
@@ -145,14 +146,15 @@ int main(void)
     printbuf(rxBuf, BUFFSIZE);
 
     /* ---- Write image data ---- */ 
-    
+    // Set the screen to black, then wait for 2 seconds, then set it to white
+
     // Memory write command (0x2C), 
     memset(txBuf, 0, BUFFSIZE);
     memset(rxBuf, 0, BUFFSIZE);
     txBuf[0] = 0x2C;
     SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
 
-    for (size_t i = 0; i < 32; i++) // 320 / 5 = 64: make half the screen black.
+    for (size_t i = 0; i < 64; i++) // 320 / 5 = 64: make the screen black.
     {
         // Send data: D/C high and 20 lines of black
         // 3 * 240 bytes (240 pixels) = 720 bytes per line
@@ -164,13 +166,41 @@ int main(void)
         GPIO_setValue(&selectData, true);
         SPI_transfer(spiFileDesc, databuf, NULL, DATABUFLEN);
     }
-    
+
+    // Signal end of data transmission by sending any command. NEED THIS OTHERWISE CONTINUES FILLING REST OF SCREEN.
+    GPIO_setValue(&selectData, false);
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x00; // NOP
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+
+    delayMs(2000);
+
+    // Memory write command (0x2C), 
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x2C;
+    SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
+
+    for (size_t i = 0; i < 64; i++) // make the screen white.
+    {
+        // Send data: D/C high and 20 lines of white
+        // 3 * 240 bytes (240 pixels) = 720 bytes per line
+        #define LINEBYTES 720
+        #define NUMLINES 5 // 20  gives "Error: SPI Transfer failed: Message too long"
+        #define DATABUFLEN LINEBYTES * NUMLINES
+        uint8_t databuf[DATABUFLEN];
+        memset(databuf, 0xFF, DATABUFLEN);
+        GPIO_setValue(&selectData, true);
+        SPI_transfer(spiFileDesc, databuf, NULL, DATABUFLEN);
+    }
+
     // Signal end of data transmission by sending any command.
     GPIO_setValue(&selectData, false);
     memset(txBuf, 0, BUFFSIZE);
     memset(rxBuf, 0, BUFFSIZE);
     txBuf[0] = 0x00; // NOP
     SPI_transfer(spiFileDesc, txBuf, rxBuf, 1);
-    
+
     return 0;
 }

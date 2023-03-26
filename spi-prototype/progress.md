@@ -115,3 +115,4 @@ draw the first 5 lines instead of drawing half the screen.
 - Data does not persist after power disconnected, or after HW reset.
 
 - Data is drawn as it is being sent: it's not like it gets stored in a buffer and updated when the NOP command is sent.
+- The screen pixels default to being line-ey, need to write white pixels in order to make the screen white.
