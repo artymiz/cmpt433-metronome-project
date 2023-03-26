@@ -116,3 +116,45 @@ draw the first 5 lines instead of drawing half the screen.
 
 - Data is drawn as it is being sent: it's not like it gets stored in a buffer and updated when the NOP command is sent.
 - The screen pixels default to being line-ey, need to write white pixels in order to make the screen white.
+
+WHAT DO COLUMN ADDRESS SET (2Ah) AND PAGE ADDRESS SET (2Bh) DO?
+- Page line in memory: A row?
+- Define area where MCU can access.
+
+```
+void Adafruit_SPITFT::sendCommand(uint8_t commandByte, uint8_t *dataBytes,
+                                  uint8_t numDataBytes) {
+  SPI_BEGIN_TRANSACTION();
+  if (_cs >= 0)
+    SPI_CS_LOW();
+
+  SPI_DC_LOW();          // Command mode
+  spiWrite(commandByte); // Send the command byte
+
+  SPI_DC_HIGH();
+  for (int i = 0; i < numDataBytes; i++) {
+    if ((connection == TFT_PARALLEL) && tft8.wide) {
+      SPI_WRITE16(*(uint16_t *)dataBytes);
+      dataBytes += 2;
+    } else {
+      spiWrite(*dataBytes); // Send the data bytes
+      dataBytes++;
+    }
+  }
+
+  if (_cs >= 0)
+    SPI_CS_HIGH();
+  SPI_END_TRANSACTION();
+}
+```
+
+You need to have control of DC midway transfer
+
+According to https://github.com/adafruit/Adafruit_ILI9341/blob/master/Adafruit_ILI9341.cpp
+>  @brief   Set the "address window" - the rectangle we will write to RAM with the next chunk of      SPI data writes. The ILI9341 will automatically wrap the data as each row is filled
+
+- Set address window is used heavily in Arudino library.
+
+BRIDGING CS TO GND DOESN'T WORK
+- We need it to move down and up
+

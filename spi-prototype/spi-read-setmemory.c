@@ -176,6 +176,19 @@ int main(void)
 
     delayMs(2000);
 
+    // Column address set: 
+    // ! DOESN'T WORK, YOU NEED TO CONTROL D/C MID-TRANSFER
+    memset(txBuf, 0, BUFFSIZE);
+    memset(rxBuf, 0, BUFFSIZE);
+    txBuf[0] = 0x2A; // Column address set (columns go left to right, 2 bytes per column, MSB first byte)
+    // Column 100 -> 200 only: hex(100) = 0x64
+    txBuf[1] = 0x00;
+    txBuf[2] = 0x64;
+    // hex(200) = 0xC8
+    txBuf[3] = 0x00;
+    txBuf[4] = 0xC8;
+    SPI_transfer(spiFileDesc, txBuf, NULL, BUFFSIZE);
+
     // Memory write command (0x2C), 
     memset(txBuf, 0, BUFFSIZE);
     memset(rxBuf, 0, BUFFSIZE);
