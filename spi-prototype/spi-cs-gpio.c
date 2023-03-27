@@ -94,34 +94,31 @@ void printbuf(uint8_t *buf, int length)
 
 void printCommandResponse(command_t c, uint8_t *buf)
 {
-    printbuf(buf + 1, c.response_size);
+    printbuf(buf, c.response_size);
 }
 
-// TODO: Set DC_LOW and DC_HIGH inside send command
 // Commands starting with READ require rxBuf to be freed (non null return from sendCommand)
 uint8_t *sendCommand(command_t c, uint8_t *params)
-{
-    CS_LOW
-    DC_LOW
-    
-    size_t txBufSize = c.num_params + 1;
-    size_t rxBufSize = c.response_size + 1;
+{   
+    size_t txBufSize = c.num_params;
+    size_t rxBufSize = c.response_size;
     size_t bufSize = txBufSize > rxBufSize ? txBufSize : rxBufSize; // max
     uint8_t *txBuf = malloc(bufSize);
     uint8_t *rxBuf = malloc(bufSize);    
     memset(txBuf, 0, bufSize);
     memset(rxBuf, 0, bufSize);
 
-    txBuf[0] = c.command_code;
     for (size_t i = 0; i < c.num_params; i++)
     {
-        txBuf[i+1] = params[i];
+        txBuf[i] = params[i];
     }
-    
-    spiTransfer(txBuf, rxBuf, bufSize);
 
-    CS_HIGH
+    CS_LOW
+    DC_LOW
+    spiTransfer(&c.command_code, NULL, 1);
     DC_HIGH
+    spiTransfer(txBuf, rxBuf, bufSize);
+    CS_HIGH
 
     free(txBuf);
     if (c.response_size == 0)
