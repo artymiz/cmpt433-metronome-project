@@ -8,10 +8,39 @@
 #include <time.h>
 #include "GPIO.h"
 
+gpioInfo_t csPin = {.pin={.header=9, .number=15}, .gpioNumber=48};
+#define CS_LOW GPIO_setValue(&csPin, false);
+#define CS_HIGH GPIO_setValue(&csPin, true);
+
+gpioInfo_t rstPin = {.pin={.header=8, .number=10}, .gpioNumber=68};
+#define RST_LOW GPIO_setValue(&rstPin, false);
+#define RST_HIGH GPIO_setValue(&rstPin, true);
+
+gpioInfo_t dcPin = {.pin={.header=9, .number=23}, .gpioNumber=49};
+#define DC_LOW GPIO_setValue(&dcPin, false);
+#define DC_HIGH GPIO_setValue(&dcPin, true);
+
+#define INIT_GPIO GPIO_usePin(&csPin, "out"); GPIO_usePin(&rstPin, "out"); GPIO_usePin(&dcPin, "out");
+
+static int spiFileDesc = -1;
+
+typedef struct command {
+    uint8_t command_code;
+    uint8_t num_params;
+    uint8_t response_size;
+} command_t;
+
+command_t NOP = {0x00, 0, 0}; // No operation
+command_t READ_POWER_MODE = {0x0A, 0, 1};
+command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
+command_t COL_ADDR_SET = {0x2A, 4, 0}; // Column address set (for memory write)
+command_t PAGE_ADDR_SET = {0x2A, 4, 0}; // Row address set (for memory write)
+command_t MEMORY_WRITE = {0x2C, 0, 0}; // Memory write (signal start of pixel data)
+
 int spiInit(char* spiDevice)
 {
     // Open Device
-    int spiFileDesc = open(spiDevice, O_RDWR);
+    spiFileDesc = open(spiDevice, O_RDWR);
     if (spiFileDesc < 0) {
         printf("Error: Can't open device %s\n", spiDevice);
         exit(1);
@@ -25,8 +54,6 @@ int spiInit(char* spiDevice)
         perror("Error: Set SPI mode failed\n");
         exit(1);
     }
-
-    return spiFileDesc;
 }
 
 
@@ -39,7 +66,7 @@ void delayMs(long long ms)
     nanosleep(&ts, (struct timespec *)NULL);
 }
 
-void spiSend(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int length)
+void spiTransfer(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int length)
 {
     // Setting transfer this way ensures all other fields are 0
     struct spi_ioc_transfer transfer = {
@@ -64,57 +91,74 @@ void printbuf(uint8_t *buf, int length)
     printf("\n");
 }
 
+uint8_t *sendCommand(command_t c, uint8_t *params)
+{
+    size_t txBufSize = c.num_params + 1;
+    size_t rxBufSize = c.response_size + 1;
+    size_t bufSize = txBufSize > rxBufSize ? txBufSize : rxBufSize; // max
+    uint8_t *txBuf = malloc(bufSize);
+    uint8_t *rxBuf = malloc(bufSize);    
+    memset(txBuf, 0, bufSize);
+    memset(rxBuf, 0, bufSize);
+
+    txBuf[0] = c.command_code;
+    for (size_t i = 0; i < c.num_params; i++)
+    {
+        txBuf[i+1] = params[i];
+    }
+    
+    spiTransfer(spiFileDesc, txBuf, rxBuf, bufSize);
+    free(txBuf);
+    if (c.response_size == 0)
+    {
+        free(rxBuf);
+        return NULL;
+    }
+    return rxBuf;
+}
+
 int main(void)
 {
+    system("./config-pin-script.sh");
+    
     // Setup D/C pin
-    gpioInfo_t dcPin = {.pin={.header=9, .number=23}, .gpioNumber=49};
-    GPIO_usePin(&dcPin, "out");
+    INIT_GPIO
 
     /* ---- Power on sequence ---- */
     // Based on: https://cdn-shop.adafruit.com/datasheets/TM022HDH26_V1.0.pdf page 13.
 
     // Setup Reset pin: set it HIGH, then set it LOW for 10 microseconds (to reset), then HIGH.
     // Based on: https://cdn-shop.adafruit.com/datasheets/TM022HDH26_V1.0.pdf page 12.
-    gpioInfo_t rstPin = {.pin={.header=8, .number=10}, .gpioNumber=68};
-    GPIO_usePin(&rstPin, "out");
-    GPIO_setValue(&rstPin, true);
+    // gpioInfo_t rstPin = {.pin={.header=8, .number=10}, .gpioNumber=68};
+    RST_HIGH
     delayMs(100);
-    GPIO_setValue(&rstPin, false);
+    RST_LOW
     delayMs(10);
-    GPIO_setValue(&rstPin, true);
+    RST_HIGH
     delayMs(20);
 
-    // Setup CS pin
-    gpioInfo_t csPin = {.pin={.header=9, .number=15}, .gpioNumber=48};
-    GPIO_usePin(&csPin, "out");
-    GPIO_setValue(&csPin, true);
+    spiInit("/dev/spidev0.0");
 
-    int spiFileDesc = spiInit("/dev/spidev0.0");
+    DC_LOW
+    CS_LOW
 
-    GPIO_setValue(&dcPin, false);
-    GPIO_setValue(&csPin, false);
-
-    // Read power mode cmd: 0x08 (expected result!) Normal mode 
-    uint8_t txBuf[2];
-    uint8_t rxBuf[2];
-    memset(txBuf, 0, 2);
-    memset(rxBuf, 0, 2);
-    txBuf[0] = 0xA;
-    spiSend(spiFileDesc, txBuf, rxBuf, 2);
-    printbuf(rxBuf, 2);
+    // Read power mode cmd: 0x08 (expected result!) Normal mode
+    uint8_t *powerMode = sendCommand(READ_POWER_MODE, NULL);
+    printbuf(powerMode, 2);
+    free(powerMode);
 
     // Wake up
     memset(txBuf, 0, 2);
     memset(rxBuf, 0, 2);
     txBuf[0] = 0x11;
-    spiSend(spiFileDesc, txBuf, rxBuf, 2);
+    spiTransfer(spiFileDesc, txBuf, rxBuf, 2);
     printbuf(rxBuf, 2);
 
     // Read power mode cmd: 0x98 (expected result!) Normal mode, Sleep out, Booster on
     memset(txBuf, 0, 2);
     memset(rxBuf, 0, 2);
     txBuf[0] = 0xA;
-    spiSend(spiFileDesc, txBuf, rxBuf, 2);
+    spiTransfer(spiFileDesc, txBuf, rxBuf, 2);
     printbuf(rxBuf, 2);
 
     return 0;
