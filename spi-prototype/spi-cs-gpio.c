@@ -97,9 +97,13 @@ void printCommandResponse(command_t c, uint8_t *buf)
     printbuf(buf + 1, c.response_size);
 }
 
+// TODO: Set DC_LOW and DC_HIGH inside send command
 // Commands starting with READ require rxBuf to be freed (non null return from sendCommand)
 uint8_t *sendCommand(command_t c, uint8_t *params)
 {
+    CS_LOW
+    DC_LOW
+    
     size_t txBufSize = c.num_params + 1;
     size_t rxBufSize = c.response_size + 1;
     size_t bufSize = txBufSize > rxBufSize ? txBufSize : rxBufSize; // max
@@ -115,6 +119,10 @@ uint8_t *sendCommand(command_t c, uint8_t *params)
     }
     
     spiTransfer(txBuf, rxBuf, bufSize);
+
+    CS_HIGH
+    DC_HIGH
+
     free(txBuf);
     if (c.response_size == 0)
     {
@@ -128,8 +136,10 @@ int main(void)
 {
     system("./config-pin-script.sh");
     
-    // Setup D/C pin
+    // Setup RST, and default states for CS (high), DC (high)
     INIT_GPIO
+    CS_HIGH
+    DC_HIGH
 
     /* ---- Power on sequence ---- */
     // Based on: https://cdn-shop.adafruit.com/datasheets/TM022HDH26_V1.0.pdf page 13.
@@ -145,9 +155,6 @@ int main(void)
     delayMs(20);
 
     spiInit("/dev/spidev0.0");
-
-    DC_LOW
-    CS_LOW
 
     // Read power mode cmd: 0x08 (expected result!) Normal mode
     uint8_t *powerMode;
