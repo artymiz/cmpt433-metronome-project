@@ -148,7 +148,7 @@ void Adafruit_SPITFT::sendCommand(uint8_t commandByte, uint8_t *dataBytes,
 }
 ```
 
-You need to have control of DC midway transfer
+You need to have control of D/C midway transfer
 
 According to https://github.com/adafruit/Adafruit_ILI9341/blob/master/Adafruit_ILI9341.cpp
 >  @brief   Set the "address window" - the rectangle we will write to RAM with the next chunk of      SPI data writes. The ILI9341 will automatically wrap the data as each row is filled
@@ -157,4 +157,10 @@ According to https://github.com/adafruit/Adafruit_ILI9341/blob/master/Adafruit_I
 
 BRIDGING CS TO GND DOESN'T WORK
 - We need it to move down and up
+
+*3/26*
+
+Using p9.15 to control CS: need to do this because write cycle sequence on page 32 of https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf 
+
+Able to do everything? that could be done previously using this method!
 
