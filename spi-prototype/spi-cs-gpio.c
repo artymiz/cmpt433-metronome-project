@@ -31,11 +31,12 @@ typedef struct command {
 } command_t;
 
 command_t NOP = {0x00, 0, 0}; // No operation
-command_t READ_POWER_MODE = {0x0A, 0, 1};
-command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
+command_t SLEEP_OUT = {0x11, 0, 0}; // Wake up
 command_t COL_ADDR_SET = {0x2A, 4, 0}; // Column address set (for memory write)
 command_t PAGE_ADDR_SET = {0x2A, 4, 0}; // Row address set (for memory write)
 command_t MEMORY_WRITE = {0x2C, 0, 0}; // Memory write (signal start of pixel data)
+command_t READ_POWER_MODE = {0x0A, 0, 1};
+command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
 
 int spiInit(char* spiDevice)
 {
@@ -66,7 +67,7 @@ void delayMs(long long ms)
     nanosleep(&ts, (struct timespec *)NULL);
 }
 
-void spiTransfer(int spiFileDesc, uint8_t *sendBuf, uint8_t *receiveBuf, int length)
+void spiTransfer(uint8_t *sendBuf, uint8_t *receiveBuf, int length)
 {
     // Setting transfer this way ensures all other fields are 0
     struct spi_ioc_transfer transfer = {
@@ -91,6 +92,12 @@ void printbuf(uint8_t *buf, int length)
     printf("\n");
 }
 
+void printCommandResponse(command_t c, uint8_t *buf)
+{
+    printbuf(buf + 1, c.response_size);
+}
+
+// Commands starting with READ require rxBuf to be freed (non null return from sendCommand)
 uint8_t *sendCommand(command_t c, uint8_t *params)
 {
     size_t txBufSize = c.num_params + 1;
@@ -107,7 +114,7 @@ uint8_t *sendCommand(command_t c, uint8_t *params)
         txBuf[i+1] = params[i];
     }
     
-    spiTransfer(spiFileDesc, txBuf, rxBuf, bufSize);
+    spiTransfer(txBuf, rxBuf, bufSize);
     free(txBuf);
     if (c.response_size == 0)
     {
@@ -143,23 +150,18 @@ int main(void)
     CS_LOW
 
     // Read power mode cmd: 0x08 (expected result!) Normal mode
-    uint8_t *powerMode = sendCommand(READ_POWER_MODE, NULL);
-    printbuf(powerMode, 2);
+    uint8_t *powerMode;
+    powerMode = sendCommand(READ_POWER_MODE, NULL);
+    printCommandResponse(READ_POWER_MODE, powerMode);
     free(powerMode);
 
     // Wake up
-    memset(txBuf, 0, 2);
-    memset(rxBuf, 0, 2);
-    txBuf[0] = 0x11;
-    spiTransfer(spiFileDesc, txBuf, rxBuf, 2);
-    printbuf(rxBuf, 2);
+    sendCommand(SLEEP_OUT, NULL);
 
     // Read power mode cmd: 0x98 (expected result!) Normal mode, Sleep out, Booster on
-    memset(txBuf, 0, 2);
-    memset(rxBuf, 0, 2);
-    txBuf[0] = 0xA;
-    spiTransfer(spiFileDesc, txBuf, rxBuf, 2);
-    printbuf(rxBuf, 2);
+    powerMode = sendCommand(READ_POWER_MODE, NULL);
+    printCommandResponse(READ_POWER_MODE, powerMode);
+    free(powerMode);
 
     return 0;
 }
