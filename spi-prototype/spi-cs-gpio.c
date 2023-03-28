@@ -23,6 +23,9 @@
 
 #define INIT_GPIO GPIO_pinMode(CS_PIN, true); GPIO_pinMode(RST_PIN, true); GPIO_pinMode(DC_PIN, true);
 
+#define COL_MAX 240
+#define ROW_MAX 320
+
 static int spiFileDesc = -1;
 
 typedef struct command {
@@ -35,7 +38,7 @@ command_t NOP = {0x00, 0, 0}; // No operation
 command_t SLEEP_OUT = {0x11, 0, 0}; // Wake up
 command_t DISPLAY_ON = {0x29, 0, 0}; // Wake up
 command_t COL_ADDR_SET = {0x2A, 4, 0}; // Column address set (for memory write)
-command_t PAGE_ADDR_SET = {0x2A, 4, 0}; // Row address set (for memory write)
+command_t PAGE_ADDR_SET = {0x2B, 4, 0}; // Row address set (for memory write)
 command_t MEMORY_WRITE = {0x2C, 0, 0}; // Memory write (signal start of pixel data)
 command_t READ_POWER_MODE = {0x0A, 0, 1};
 command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
@@ -131,6 +134,43 @@ uint8_t *sendCommand(command_t c, uint8_t *params)
     return rxBuf;
 }
 
+// https://codereview.stackexchange.com/questions/151049/endianness-conversion-in-c
+uint16_t reverse16(uint16_t value)
+{
+    return (((value & 0x00FF) << 8) |
+            ((value & 0xFF00) >> 8));
+}
+
+// https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf page 14: 
+// Column address set, Row address set, then memory write.
+void setMemoryWriteArea(uint16_t x0, uint16_t x1, uint16_t y0, uint16_t y1)
+{
+    assert(x0 < x1);
+    assert(x1 < COL_MAX); // 0 - 239 (0 indexed)
+    assert(y0 < y1);
+    assert(y1 < ROW_MAX); // 0 - 319 (0 indexed)
+    
+    // Convert from little endian to big endian.
+    x0 = reverse16(x0);
+    x1 = reverse16(x1);
+    y0 = reverse16(y0);
+    y1 = reverse16(y1);
+
+    // Restrict columns to write.
+    uint8_t colStartEnd[4];
+    memset(colStartEnd, 0, 4);
+    memcpy(colStartEnd, &x0, 2);
+    memcpy(colStartEnd + 2, &x1, 2);
+    sendCommand(COL_ADDR_SET, colStartEnd);
+
+    // Restrict rows to write.
+    uint8_t rowStartEnd[4];
+    memset(rowStartEnd, 0, 4);
+    memcpy(rowStartEnd, &x0, 2);
+    memcpy(rowStartEnd + 2, &x1, 2);
+    sendCommand(PAGE_ADDR_SET, rowStartEnd);
+}
+
 int main(void)
 {
     system("./config-pin-script.sh > /dev/null");
@@ -162,38 +202,16 @@ int main(void)
     assert(powerMode[0] == 0x9C);
     free(powerMode);
 
-    // https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf page 14: 
-    // Column address set, Row address set, then memory write.
-
-    // Restrict columns to write.
-    uint8_t colStartEnd[4];
-    memset(colStartEnd, 0, 4);
-    colStartEnd[1] = 30;
-    colStartEnd[3] = 50;
-    sendCommand(COL_ADDR_SET, colStartEnd);
-
-    // // Restrict rows to write.
-    // uint8_t rowStartEnd[4];
-    // uint16_t rowStart = 100;
-    // uint16_t rowEnd = 280;
-    // memcpy(rowStartEnd, &rowStart, 2);
-    // memcpy(rowStartEnd + 2, &rowEnd, 2);
-    // sendCommand(PAGE_ADDR_SET, rowStartEnd);
-
-    // Start memory write
+    setMemoryWriteArea(20, 40, 20, 40);
+    // Write 400 black square pixels.
     sendCommand(MEMORY_WRITE, NULL);
 
-    int lineCount = 320;
-    for (size_t i = 0; i < lineCount; i++)
-    {
-        // 3 bytes/pixel * 240 pixels/line = 720 bytes/ line
-        #define LINEBYTES 720
-        uint8_t databuf[LINEBYTES];
-        memset(databuf, 0x00, LINEBYTES);
-        CS_LOW
-        spiTransfer(databuf, NULL, LINEBYTES);
-        CS_HIGH
-    }
+    const int byteCount = 400 * 3; // 3 bytes per pixel
+    uint8_t databuf[byteCount];
+    memset(databuf, 0x00, byteCount);
+    CS_LOW
+    spiTransfer(databuf, NULL, byteCount);
+    CS_HIGH
 
     sendCommand(NOP, NULL);
 
