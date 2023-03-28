@@ -202,15 +202,33 @@ int main(void)
     assert(powerMode[0] == 0x9C);
     free(powerMode);
 
+    /* ---- Write white screen. ---- */
+    
+    sendCommand(MEMORY_WRITE, NULL);
+    
+    const int byteLineCount = COL_MAX * 3; // 720 bytes per line
+    uint8_t databufLine[byteLineCount];
+    memset(databufLine, 0xFF, byteLineCount);
+    for (size_t i = 0; i < ROW_MAX; i++)
+    {
+        CS_LOW
+        spiTransfer(databufLine, NULL, byteLineCount);
+        CS_HIGH
+    }
+    
+    sendCommand(NOP, NULL);
+    
+    /* ---- Write 400 black square pixels. ---- */
+
     setMemoryWriteArea(20, 40, 20, 40);
-    // Write 400 black square pixels.
+    
     sendCommand(MEMORY_WRITE, NULL);
 
     const int byteCount = 400 * 3; // 3 bytes per pixel
-    uint8_t databuf[byteCount];
-    memset(databuf, 0x00, byteCount);
+    uint8_t databufSquare[byteCount];
+    memset(databufSquare, 0x00, byteCount);
     CS_LOW
-    spiTransfer(databuf, NULL, byteCount);
+    spiTransfer(databufSquare, NULL, byteCount);
     CS_HIGH
 
     sendCommand(NOP, NULL);
