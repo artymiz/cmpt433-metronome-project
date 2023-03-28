@@ -1,3 +1,5 @@
+// ! THIS FILE IS BROKEN DUE TO GPIO LIBRARY CHANGES
+
 // Initialize TM022HDH26 display (Which includes ILI9340 as the driver IC)
 // and read the power state of the display to make sure that everything is configured.
 // The display is controlled via 4-wire serial protocol (a 

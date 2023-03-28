@@ -9,19 +9,19 @@
 #include <assert.h>
 #include "GPIO.h"
 
-gpioInfo_t csPin = {.pin={.header=9, .number=15}, .gpioNumber=48};
-#define CS_LOW GPIO_setValue(&csPin, false);
-#define CS_HIGH GPIO_setValue(&csPin, true);
+#define CS_PIN 48
+#define CS_LOW GPIO_setValue(CS_PIN, false);
+#define CS_HIGH GPIO_setValue(CS_PIN, true);
 
-gpioInfo_t rstPin = {.pin={.header=8, .number=10}, .gpioNumber=68};
-#define RST_LOW GPIO_setValue(&rstPin, false);
-#define RST_HIGH GPIO_setValue(&rstPin, true);
+#define RST_PIN 68
+#define RST_LOW GPIO_setValue(RST_PIN, false);
+#define RST_HIGH GPIO_setValue(RST_PIN, true);
 
-gpioInfo_t dcPin = {.pin={.header=9, .number=23}, .gpioNumber=49};
-#define DC_LOW GPIO_setValue(&dcPin, false);
-#define DC_HIGH GPIO_setValue(&dcPin, true);
+#define DC_PIN 49
+#define DC_LOW GPIO_setValue(DC_PIN, false);
+#define DC_HIGH GPIO_setValue(DC_PIN, true);
 
-#define INIT_GPIO GPIO_usePin(&csPin, "out"); GPIO_usePin(&rstPin, "out"); GPIO_usePin(&dcPin, "out");
+#define INIT_GPIO GPIO_usePin(CS_PIN, "out"); GPIO_usePin(RST_PIN, "out"); GPIO_usePin(DC_PIN, "out");
 
 static int spiFileDesc = -1;
 

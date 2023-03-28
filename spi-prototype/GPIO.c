@@ -6,10 +6,13 @@
 #define FILENAME_FMTSTR "/sys/class/gpio/gpio%d/%s"
 #define MAX_FILENAME_LEN 100
 
-void GPIO_usePin(gpioInfo_t *gpioInfo, char *direction)
+/**
+ * pin: software pin number
+*/
+void GPIO_usePin(int pin, char *direction)
 {
     char filename[MAX_FILENAME_LEN];
-    sprintf(filename, FILENAME_FMTSTR, gpioInfo->gpioNumber, "direction");
+    sprintf(filename, FILENAME_FMTSTR, pin, "direction");
     FILE *directionFile = fopen(filename, "w");
     if (!directionFile) {
         fprintf(stderr, "GPIO ERROR: failed to open %s\n", filename);
@@ -23,10 +26,10 @@ void GPIO_usePin(gpioInfo_t *gpioInfo, char *direction)
     fclose(directionFile);
 }
 
-int GPIO_getValue(gpioInfo_t *gpioInfo)
+int GPIO_getValue(int pin)
 {
     char filename[MAX_FILENAME_LEN];
-    sprintf(filename, FILENAME_FMTSTR, gpioInfo->gpioNumber, "value");
+    sprintf(filename, FILENAME_FMTSTR, pin, "value");
     FILE *valueFile = fopen(filename, "r");
     if (!valueFile) {
         fprintf(stderr, "GPIO ERROR: failed to open %s\n", filename);
@@ -38,16 +41,16 @@ int GPIO_getValue(gpioInfo_t *gpioInfo)
     return value;
 }
 
-void GPIO_setValue(gpioInfo_t *gpioInfo, bool isHigh)
+void GPIO_setValue(int pin, bool high)
 {
     char filename[MAX_FILENAME_LEN];
-    sprintf(filename, FILENAME_FMTSTR, gpioInfo->gpioNumber, "value");
+    sprintf(filename, FILENAME_FMTSTR, pin, "value");
     FILE *valueFile = fopen(filename, "w");
     if (!valueFile) {
         fprintf(stderr, "GPIO ERROR: failed to open %s\n", filename);
         exit(1);
     }
-    char *toWrite = isHigh ? "1" : "0";
+    char *toWrite = high ? "1" : "0";
     int itemsWritten = fwrite(toWrite, 1, 1, valueFile);
     if (itemsWritten != 1) {
         fprintf(stderr, "GPIO ERROR: failed to write %s\n", filename);
