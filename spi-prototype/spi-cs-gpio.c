@@ -68,6 +68,7 @@ void delayMs(long long ms)
     nanosleep(&ts, (struct timespec *)NULL);
 }
 
+// Does not touch CS or D/C
 void spiTransfer(uint8_t *sendBuf, uint8_t *receiveBuf, int length)
 {
     // Setting transfer this way ensures all other fields are 0
@@ -104,8 +105,8 @@ uint8_t *sendCommand(command_t c, uint8_t *params)
     size_t txBufSize = c.num_params;
     size_t rxBufSize = c.response_size;
     size_t bufSize = txBufSize > rxBufSize ? txBufSize : rxBufSize; // max
-    uint8_t *txBuf = malloc(bufSize);
-    uint8_t *rxBuf = malloc(bufSize);    
+    uint8_t *txBuf = malloc(bufSize); // command parameters
+    uint8_t *rxBuf = malloc(bufSize); // data sent back from display
     memset(txBuf, 0, bufSize);
     memset(rxBuf, 0, bufSize);
 
@@ -160,6 +161,41 @@ int main(void)
     // printCommandResponse(READ_POWER_MODE, powerMode);
     assert(powerMode[0] == 0x9C);
     free(powerMode);
+
+    // https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf page 14: 
+    // Column address set, Row address set, then memory write.
+
+    // Restrict columns to write.
+    uint8_t colStartEnd[4];
+    memset(colStartEnd, 0, 4);
+    colStartEnd[1] = 30;
+    colStartEnd[3] = 50;
+    sendCommand(COL_ADDR_SET, colStartEnd);
+
+    // // Restrict rows to write.
+    // uint8_t rowStartEnd[4];
+    // uint16_t rowStart = 100;
+    // uint16_t rowEnd = 280;
+    // memcpy(rowStartEnd, &rowStart, 2);
+    // memcpy(rowStartEnd + 2, &rowEnd, 2);
+    // sendCommand(PAGE_ADDR_SET, rowStartEnd);
+
+    // Start memory write
+    sendCommand(MEMORY_WRITE, NULL);
+
+    int lineCount = 320;
+    for (size_t i = 0; i < lineCount; i++)
+    {
+        // 3 bytes/pixel * 240 pixels/line = 720 bytes/ line
+        #define LINEBYTES 720
+        uint8_t databuf[LINEBYTES];
+        memset(databuf, 0x00, LINEBYTES);
+        CS_LOW
+        spiTransfer(databuf, NULL, LINEBYTES);
+        CS_HIGH
+    }
+
+    sendCommand(NOP, NULL);
 
     return 0;
 }
