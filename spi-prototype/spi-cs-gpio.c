@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <time.h>
+#include <assert.h>
 #include "GPIO.h"
 
 gpioInfo_t csPin = {.pin={.header=9, .number=15}, .gpioNumber=48};
@@ -32,6 +33,7 @@ typedef struct command {
 
 command_t NOP = {0x00, 0, 0}; // No operation
 command_t SLEEP_OUT = {0x11, 0, 0}; // Wake up
+command_t DISPLAY_ON = {0x29, 0, 0}; // Wake up
 command_t COL_ADDR_SET = {0x2A, 4, 0}; // Column address set (for memory write)
 command_t PAGE_ADDR_SET = {0x2A, 4, 0}; // Row address set (for memory write)
 command_t MEMORY_WRITE = {0x2C, 0, 0}; // Memory write (signal start of pixel data)
@@ -56,7 +58,6 @@ int spiInit(char* spiDevice)
         exit(1);
     }
 }
-
 
 void delayMs(long long ms)
 {
@@ -131,16 +132,15 @@ uint8_t *sendCommand(command_t c, uint8_t *params)
 
 int main(void)
 {
-    system("./config-pin-script.sh");
+    system("./config-pin-script.sh > /dev/null");
     
     // Setup RST, and default states for CS (high), DC (high)
     INIT_GPIO
     CS_HIGH
     DC_HIGH
 
-    /* ---- Power on sequence ---- */
+    // Power on sequence.
     // Based on: https://cdn-shop.adafruit.com/datasheets/TM022HDH26_V1.0.pdf page 13.
-
     // Setup Reset pin: set it HIGH, then set it LOW for 10 microseconds (to reset), then HIGH.
     // Based on: https://cdn-shop.adafruit.com/datasheets/TM022HDH26_V1.0.pdf page 12.
     // gpioInfo_t rstPin = {.pin={.header=8, .number=10}, .gpioNumber=68};
@@ -150,21 +150,15 @@ int main(void)
     delayMs(10);
     RST_HIGH
     delayMs(20);
-
     spiInit("/dev/spidev0.0");
-
-    // Read power mode cmd: 0x08 (expected result!) Normal mode
-    uint8_t *powerMode;
-    powerMode = sendCommand(READ_POWER_MODE, NULL);
-    printCommandResponse(READ_POWER_MODE, powerMode);
-    free(powerMode);
-
-    // Wake up
     sendCommand(SLEEP_OUT, NULL);
+    delayMs(60);
+    sendCommand(DISPLAY_ON, NULL);
 
-    // Read power mode cmd: 0x98 (expected result!) Normal mode, Sleep out, Booster on
-    powerMode = sendCommand(READ_POWER_MODE, NULL);
-    printCommandResponse(READ_POWER_MODE, powerMode);
+    // Read power mode cmd: 0x9c (expected result!) Normal mode, Sleep out, Booster on, Display on
+    uint8_t *powerMode = sendCommand(READ_POWER_MODE, NULL);
+    // printCommandResponse(READ_POWER_MODE, powerMode);
+    assert(powerMode[0] == 0x9C);
     free(powerMode);
 
     return 0;
