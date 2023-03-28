@@ -34,14 +34,14 @@ typedef struct command {
     uint8_t response_size;
 } command_t;
 
-command_t NOP = {0x00, 0, 0}; // No operation
-command_t SLEEP_OUT = {0x11, 0, 0}; // Wake up
-command_t DISPLAY_ON = {0x29, 0, 0}; // Wake up
-command_t COL_ADDR_SET = {0x2A, 4, 0}; // Column address set (for memory write)
-command_t PAGE_ADDR_SET = {0x2B, 4, 0}; // Row address set (for memory write)
-command_t MEMORY_WRITE = {0x2C, 0, 0}; // Memory write (signal start of pixel data)
-command_t READ_POWER_MODE = {0x0A, 0, 1};
-command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
+static const command_t NOP                 = {0x00, 0, 0};  // No operation
+static const command_t SLEEP_OUT           = {0x11, 0, 0};  // Wake up
+static const command_t DISPLAY_ON          = {0x29, 0, 0};  // Wake up
+static const command_t COL_ADDR_SET        = {0x2A, 4, 0};  // Column address set (for memory write)
+static const command_t PAGE_ADDR_SET       = {0x2B, 4, 0};  // Row address set (for memory write)
+static const command_t MEMORY_WRITE        = {0x2C, 0, 0};  // Memory write (signal start of pixel data)
+static const command_t READ_POWER_MODE     = {0x0A, 0, 1};
+static const command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
 
 int spiInit(char* spiDevice)
 {
