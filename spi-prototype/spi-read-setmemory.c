@@ -91,7 +91,7 @@ int main(void)
 {    
     // Setup D/C pin, set it LOW.
     gpioInfo_t selectData = {.pin={.header=9, .number=23}, .gpioNumber=49};
-    GPIO_usePin(&selectData, "out");
+    GPIO_pinMode(&selectData, "out");
     GPIO_setValue(&selectData, false);
 
     /* ---- Power on sequence ---- */
@@ -100,7 +100,7 @@ int main(void)
     // Setup Reset pin: set it HIGH, then set it LOW for 10 microseconds (to reset), then HIGH.
     // Based on: https://cdn-shop.adafruit.com/datasheets/TM022HDH26_V1.0.pdf page 12.
     gpioInfo_t reset = {.pin={.header=8, .number=10}, .gpioNumber=68};
-    GPIO_usePin(&reset, "out");
+    GPIO_pinMode(&reset, "out");
     GPIO_setValue(&reset, true);
     delayMs(100);
     GPIO_setValue(&reset, false);

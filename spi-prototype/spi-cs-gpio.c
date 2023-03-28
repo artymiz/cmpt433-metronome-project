@@ -21,7 +21,7 @@
 #define DC_LOW GPIO_setValue(DC_PIN, false);
 #define DC_HIGH GPIO_setValue(DC_PIN, true);
 
-#define INIT_GPIO GPIO_usePin(CS_PIN, "out"); GPIO_usePin(RST_PIN, "out"); GPIO_usePin(DC_PIN, "out");
+#define INIT_GPIO GPIO_pinMode(CS_PIN, true); GPIO_pinMode(RST_PIN, true); GPIO_pinMode(DC_PIN, true);
 
 static int spiFileDesc = -1;
 

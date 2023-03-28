@@ -9,7 +9,7 @@
 /**
  * pin: software pin number
 */
-void GPIO_usePin(int pin, char *direction)
+void GPIO_pinMode(int pin, bool isOut)
 {
     char filename[MAX_FILENAME_LEN];
     sprintf(filename, FILENAME_FMTSTR, pin, "direction");
@@ -18,7 +18,8 @@ void GPIO_usePin(int pin, char *direction)
         fprintf(stderr, "GPIO ERROR: failed to open %s\n", filename);
         exit(1);
     }
-    int charcount = fprintf(directionFile, direction);
+    char *toWrite = isOut ? "out" : "in";
+    int charcount = fprintf(directionFile, toWrite);
     if (charcount <= 0) {
         fprintf(stderr, "GPIO ERROR: failed to write %s\n", filename);
         exit(1);
@@ -41,7 +42,7 @@ int GPIO_getValue(int pin)
     return value;
 }
 
-void GPIO_setValue(int pin, bool high)
+void GPIO_setValue(int pin, bool isHigh)
 {
     char filename[MAX_FILENAME_LEN];
     sprintf(filename, FILENAME_FMTSTR, pin, "value");
@@ -50,7 +51,7 @@ void GPIO_setValue(int pin, bool high)
         fprintf(stderr, "GPIO ERROR: failed to open %s\n", filename);
         exit(1);
     }
-    char *toWrite = high ? "1" : "0";
+    char *toWrite = isHigh ? "1" : "0";
     int itemsWritten = fwrite(toWrite, 1, 1, valueFile);
     if (itemsWritten != 1) {
         fprintf(stderr, "GPIO ERROR: failed to write %s\n", filename);
