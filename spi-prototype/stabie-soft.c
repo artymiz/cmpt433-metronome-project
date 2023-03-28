@@ -1,3 +1,5 @@
+// This file is just for ideas and tips, it uses 3-line SPI which is not supported by our hardware.
+
 // copied from: http://www.stabie-soft.com/beagle/beagleSpi.html
 
 #include <stdint.h>
