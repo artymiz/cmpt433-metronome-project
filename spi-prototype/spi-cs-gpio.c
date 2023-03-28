@@ -143,8 +143,12 @@ uint16_t reverse16(uint16_t value)
 
 // https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf page 14: 
 // Column address set, Row address set, then memory write.
-void setMemoryWriteArea(uint16_t x0, uint16_t x1, uint16_t y0, uint16_t y1)
+// Also same as: https://github.com/adafruit/Adafruit_ILI9341/blob/master/Adafruit_ILI9341.cpp (setAddrWindow)
+void setMemoryWriteArea(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
 {
+    uint16_t x1 = x0 + w - 1;
+    uint16_t y1 = y0 + h - 1;
+
     assert(x0 < x1);
     assert(x1 < COL_MAX); // 0 - 239 (0 indexed)
     assert(y0 < y1);
@@ -218,13 +222,14 @@ int main(void)
     
     sendCommand(NOP, NULL);
     
-    /* ---- Write 400 black square pixels. ---- */
+    /* ---- Write 1 black square pixels. ---- */
 
-    setMemoryWriteArea(20, 40, 20, 40);
+    const int squareEdge = 20;
+    setMemoryWriteArea(squareEdge, squareEdge, squareEdge, squareEdge);
     
     sendCommand(MEMORY_WRITE, NULL);
 
-    const int byteCount = 400 * 3; // 3 bytes per pixel
+    const int byteCount = squareEdge * squareEdge * 3; // 3 bytes per pixel
     uint8_t databufSquare[byteCount];
     memset(databufSquare, 0x00, byteCount);
     CS_LOW
