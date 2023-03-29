@@ -9,5 +9,6 @@ config-pin P9_23 gpio       # D/C (data/command)
 
 #config pins for the buttons
 config-pin P8_07 gpio #gpio 66
-config-pin P8_08 gpio #gpio 67
-config-pin P8_09 gpio #gpio 69
+sudo echo 66 > /sys/class/gpio/export
+#config-pin P8_08 gpio #gpio 67
+#config-pin P8_09 gpio #gpio 69
