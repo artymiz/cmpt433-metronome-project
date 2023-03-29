@@ -26,7 +26,7 @@ static void *tickerRoutine(void *args)
     return NULL;
 }
 
-// Relies on Audio and State being initialized
+// Relies on Audio and State modules being initialized
 void Ticker_init()
 {   
     int numSamples = Audio_load(TICK_FILE, &tick, TICK_SAMPLE_COUNT);

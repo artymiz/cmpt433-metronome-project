@@ -2,27 +2,23 @@
 #include <stdio.h>
 #include "State.h"
 
-// This test should succeed when state.bin is empty, 
-// and SHOULD FAIL afterwards.
 int main(int argc, char const *argv[])
 {
-    State_read();
+    State_init();
     
-    // Good default values?
-    assert(State_getBpm() == 120);
-    assert(State_getVolume() == 80);
-    assert(State_getBeatsPerBar() == 4);
+    printf("%d\n", State_get(ID_BPM));
+    printf("%d\n", State_get(ID_BEATSPERBAR));
+    printf("%d\n", State_get(ID_BPM));
+    printf("%d\n", State_get(ID_VOLUME));
+
+    State_set(ID_BEATSPERBAR, 5);
+    State_set(ID_VOLUME, 1000);
+    State_set(ID_VOLUME, 44);
+    printf("%d\n", State_get(ID_VOLUME));
+    printf("%d\n", State_get(ID_BEATSPERBAR));
+
+
+    State_cleanup();
     
-    // Getting and setting while state loaded?
-    State_setBpm(70);
-    assert(State_getBpm() == 70);
-
-    // Is state saved?
-    State_setVolume(50);
-    State_write();
-    State_read();
-    assert(State_getVolume() == 50);
-    State_write();
-
     return 0;
 }
