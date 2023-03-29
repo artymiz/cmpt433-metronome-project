@@ -18,7 +18,7 @@ static void *tickerRoutine(void *args)
 {
     while (1)
     {
-        int bpm = State_getBpm();
+        int bpm = State_get(ID_BPM);
         silence.numSamples = SAMPLE_RATE * (60.0 / bpm);
         Audio_play(&tick);
         Audio_play(&silence);
@@ -32,7 +32,7 @@ void Ticker_init()
     int numSamples = Audio_load(TICK_FILE, &tick, TICK_SAMPLE_COUNT);
     if (numSamples != TICK_SAMPLE_COUNT) return; // Requested too many samples
 
-    int maxSamples = SAMPLE_RATE * (60.0 / MIN_BPM); // At most 60 seconds of silence (1bpm)
+    int maxSamples = SAMPLE_RATE * 60; // At most 60 seconds of silence (1bpm)
     zeros = malloc(SAMPLE_SIZE * maxSamples);
 	memset(zeros, 0, SAMPLE_SIZE * maxSamples);
     

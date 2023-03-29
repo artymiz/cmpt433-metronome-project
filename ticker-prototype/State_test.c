@@ -4,7 +4,7 @@
 
 int main(int argc, char const *argv[])
 {
-    State_init();
+    State_load();
     
     printf("%d\n", State_get(ID_BPM));
     printf("%d\n", State_get(ID_BEATSPERBAR));
@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
     printf("%d\n", State_get(ID_BEATSPERBAR));
 
 
-    State_cleanup();
+    State_store();
     
     return 0;
 }

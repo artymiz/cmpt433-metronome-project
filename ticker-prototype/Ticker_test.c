@@ -8,13 +8,15 @@ pthread_t tempoChangerThread;
 
 void *tempoChangerRoutine(void *args)
 {
-    while (1)
-    {
+    while (1) {
         char ch = getchar();
-        if (ch == 'w')
-            State_setBpm(State_getBpm() + 5);
-        else if (ch == 's')
-            State_setBpm(State_getBpm() - 5);
+        int bpm = State_get(ID_BPM);
+        if (ch == 'w') {
+            State_set(ID_BPM, bpm + 5);
+        } 
+        else if (ch == 's') {
+            State_set(ID_BPM, bpm - 5);
+        }
     }
     return NULL;
 }
@@ -22,14 +24,14 @@ void *tempoChangerRoutine(void *args)
 int main(int argc, char const *argv[])
 {
     Audio_init();
-    State_read();
+    State_load();
     Ticker_init();
     pthread_create(&tempoChangerThread, NULL, tempoChangerRoutine, NULL);
     sleep(10);
     pthread_cancel(tempoChangerThread);
     pthread_join(tempoChangerThread, NULL);
     Ticker_cleanup();
-    State_write();
+    State_store();
     Audio_cleanup();
     return 0;
 }

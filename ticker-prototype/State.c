@@ -12,7 +12,7 @@ static float stateMins[] = {0, -1, 0};
 static float stateMaxs[] = {INFINITY, 101, INFINITY};
 
 // File to array
-void State_init()
+void State_load()
 {
     FILE *fState = fopen("State.txt", "r");
     if (!fState) {
@@ -32,7 +32,7 @@ void State_init()
 }
 
 // Array to file
-void State_cleanup()
+void State_store()
 {
     FILE *fState = fopen("State.txt", "w");
     for (size_t id = 0; id < STATECOUNT; id++)
