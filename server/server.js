@@ -24,9 +24,10 @@ server = http.createServer((request, response) => {
         form.parse(request, (err, fields, files) => {
             const tmpFilePath = files['audio-sample'].filepath;
             // console.log(filename); // "/tmp/0e1f004f1355cfe6e54daa000" in the /tmp folder on my Linux file system
-            fs.rename(tmpFilePath, "./uploaded/audio-sample.wav", (err) => {if (err) throw err});
+            fs.copyFile(tmpFilePath, "./uploaded/audio-sample.wav", (err) => {if (err) throw err});
         })
         // Redirect to homepage
+        console.log("Successful file transfer");
         response.writeHead(302,  {Location: "/"})
         response.end();
     }
