@@ -9,14 +9,10 @@ const fs = require('fs');
 //Third-Party Modules
 const httpStatus = require('http-status-codes');
 
-const routeMap = {
-    "/": "index.html",
-};
-
 server = http.createServer((request, response) => {
     console.log(request.url)
     if (request.url === "/") {
-        fs.readFile(routeMap[request.url], (error, data) => {
+        fs.readFile("index.html", (error, data) => {
             response.writeHead(httpStatus.StatusCodes.OK, {"Content-Type": "text/html"});
             response.write(data);
             response.end();
