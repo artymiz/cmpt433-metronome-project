@@ -10,7 +10,6 @@ const fs = require('fs');
 const httpStatus = require('http-status-codes');
 
 server = http.createServer((request, response) => {
-    console.log(request.url)
     if (request.url === "/") {
         fs.readFile("index.html", (error, data) => {
             response.writeHead(httpStatus.StatusCodes.OK, {"Content-Type": "text/html"});
@@ -18,9 +17,11 @@ server = http.createServer((request, response) => {
             response.end();
         })
     } else if (request.url === "/file-submit") {
-        console.log("File submit")
-        response.write("Hurdy gurdy")
-        response.end()
+        // Handle file submission
+
+        // Redirect to homepage
+        response.writeHead(302,  {Location: "/"})
+        response.end();
     }
     else {
         response.writeHead(httpStatus.StatusCodes.NOT_FOUND, {"Content-Type": "text/html"});
