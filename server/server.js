@@ -11,18 +11,22 @@ const httpStatus = require('http-status-codes');
 
 const routeMap = {
     "/": "index.html",
-    "file-submit": "file-submit.html"
 };
 
 server = http.createServer((request, response) => {
     console.log(request.url)
-    if (routeMap[request.url]) {
+    if (request.url === "/") {
         fs.readFile(routeMap[request.url], (error, data) => {
             response.writeHead(httpStatus.StatusCodes.OK, {"Content-Type": "text/html"});
             response.write(data);
             response.end();
         })
-    } else {
+    } else if (request.url === "/file-submit") {
+        console.log("File submit")
+        response.write("Hurdy gurdy")
+        response.end()
+    }
+    else {
         response.writeHead(httpStatus.StatusCodes.NOT_FOUND, {"Content-Type": "text/html"});
         response.end("<h1>Sorry, page not found</h1>");
     }
