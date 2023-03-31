@@ -3,6 +3,8 @@
 <head>
 	<title>BeagleBone Metronome</title>
 	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel='stylesheet' href='/stylesheets/style.css'></link>
 <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/59E112A8-8FC8-B847-8FE9-98A3ABAC8FE6/main.js" charset="UTF-8"></script></head>
 
@@ -31,10 +33,6 @@
 					<input type="button" id="tempoIncrease" value=" + "/>
 					(0 - 200)
 				</p>
-				<h2>File Transfer</h2>
-				<p>
-					<input type="button" id="uploadFile" value="Upload File"/>
-				</p>
 			</div>
 			
 		</div>
@@ -46,10 +44,23 @@
 
 	</div>
 </form>
-	
+
+<br />
+
+
 	<script src='/socket.io/socket.io.js' type='text/javascript'></script>
 	<script src='http://code.jquery.com/jquery-1.11.1.min.js' type='text/javascript'></script>
 
-	<script src='javascripts/beatbox_ui.js' type='text/javascript'></script>
+	<script src='javascripts/metro_ui.js' type='text/javascript'></script>
+
+    <form action="/file-submit" method="post" enctype="multipart/form-data">
+	<h2>File Upload</h2>
+        <input type="file" name="audio-sample"> <!-- name is important: files['audio-sample'].filepath -->
+        <button type="submit">Submit</button>
+    </form>
+    <script>
+
+    </script>
+
 </body>
 </html>
