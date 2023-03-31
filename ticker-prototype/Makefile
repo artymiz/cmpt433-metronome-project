@@ -3,11 +3,12 @@
 
 # Edit this file to compile extra C files into their own programs.
 
-OUTDIR = $(HOME)/cmpt433/public/cmpt433-metronome-project
+OUTDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/obj
 CROSS_TOOL = arm-linux-gnueabihf-
 CC_C = $(CROSS_TOOL)gcc
-
+DIR = ticker-prototype
 CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -Werror
+CFLAGSLIB = -Wall -g -c -std=c99 -D _POSIX_C_SOURCE=200809L -Werror
 
 
 # Asound process:
@@ -21,23 +22,24 @@ LFLAGS = -L$(HOME)/cmpt433/public/asound_lib_BBG
 # -pg for supporting gprof profiling.
 #CFLAGS += -pg
 
-all: wav Ticker_test State_test
-
-clean:
-	rm $(OUTDIR)/*
+all: Ticker_test
 
 Ticker_test:
 	touch $(OUTDIR)/state.bin
-	$(CC_C) $(CFLAGS) Audio.c State.c Ticker.c Ticker_test.c -o $(OUTDIR)/Ticker_test  $(LFLAGS) -lpthread -lasound
-
+	$(CC_C) $(CFLAGSLIB) $(DIR)/Audio.c -o $(OUTDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) $(DIR)/State.c -o $(OUTDIR)/State.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) $(DIR)/Ticker.c -o $(OUTDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
+	cp $(DIR)/metronome-tick.wav $(OUTDIR)/metronome-tick.wav
+module:
+	touch $(OUTDIR)/state.bin
+	$(CC_C) $(CFLAGSLIB) Audio.c -o $(OUTDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) State.c -o $(OUTDIR)/State.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) Ticker.c -o $(OUTDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
+	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 # ticker:
 # 	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
 
 # TODO: should be able to copy the human-readable config file for the metronome and have it apply
-
-# Copy wav file
-wav:
-	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 
 State_test: State.c State_test.c
 	gcc -g State.c State_test.c -o State_test
