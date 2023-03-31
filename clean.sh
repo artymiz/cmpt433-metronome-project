@@ -5,3 +5,4 @@ rm button-prototype/*.o
 rm ticker-prototype/*.o
 rm spi-prototype/*.o
 rm obj/*.o
+rm out/*

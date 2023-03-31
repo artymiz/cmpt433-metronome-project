@@ -3,7 +3,8 @@
 
 # Edit this file to compile extra C files into their own programs.
 
-OUTDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/obj
+OBJDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/obj
+OUTDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/out
 CROSS_TOOL = arm-linux-gnueabihf-
 CC_C = $(CROSS_TOOL)gcc
 DIR = ticker-prototype
@@ -26,15 +27,15 @@ all: Ticker_test
 
 Ticker_test:
 	touch $(OUTDIR)/state.bin
-	$(CC_C) $(CFLAGSLIB) $(DIR)/Audio.c -o $(OUTDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) $(DIR)/State.c -o $(OUTDIR)/State.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) $(DIR)/Ticker.c -o $(OUTDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) $(DIR)/Audio.c -o $(OBJDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) $(DIR)/State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) $(DIR)/Ticker.c -o $(OBJDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
 	cp $(DIR)/metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 module:
 	touch $(OUTDIR)/state.bin
-	$(CC_C) $(CFLAGSLIB) Audio.c -o $(OUTDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) State.c -o $(OUTDIR)/State.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) Ticker.c -o $(OUTDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) Audio.c -o $(OBJDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) Ticker.c -o $(OBJDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
 	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 # ticker:
 # 	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
