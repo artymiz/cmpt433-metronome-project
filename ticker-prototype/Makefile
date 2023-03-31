@@ -26,21 +26,15 @@ all: Ticker_test
 
 Ticker_test:
 	touch $(OUTDIR)/state.bin
-	$(CC_C) $(CFLAGSLIB) $(DIR)/Audio.c -o Audio.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) $(DIR)/State.c -o State.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) $(DIR)/Ticker.c -o Ticker.o  $(LFLAGS) -lpthread -lasound
-	cp $(DIR)/Audio.o x.o $(OUTDIR)
-	cp $(DIR)/State.o x.o $(OUTDIR)
-	cp $(DIR))/Ticker.o x.o $(OUTDIR
+	$(CC_C) $(CFLAGSLIB) $(DIR)/Audio.c -o $(OUTDIR)  $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) $(DIR)/State.c -o $(OUTDIR) $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) $(DIR)/Ticker.c -o $(OUTDIR)  $(LFLAGS) -lpthread -lasound
 	cp $(DIR)/metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 module:
 	touch $(OUTDIR)/state.bin
-	$(CC_C) $(CFLAGSLIB) Audio.c -o Audio.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) State.c -o State.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) Ticker.c -o Ticker.o  $(LFLAGS) -lpthread -lasound
-	cp Audio.o x.o $(OUTDIR)
-	cp State.o x.o $(OUTDIR)
-	cp Ticker.o x.o $(OUTDIR)
+	$(CC_C) $(CFLAGSLIB) Audio.c -o $(OUTDIR) $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) State.c -o $(OUTDIR) $(LFLAGS) -lpthread -lasound
+	$(CC_C) $(CFLAGSLIB) Ticker.c -o $(OUTDIR) $(LFLAGS) -lpthread -lasound
 	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 # ticker:
 # 	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
