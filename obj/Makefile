@@ -11,9 +11,14 @@ OBJFILES_MODULE = button.o GPIO.o button-test.o State.o Ticker.o Audio.o
 
 OUTDIR = $(HOME)/cmpt433/public/cmpt433-metronome-project
 
-all:
+all: copy-out-files
 	$(CC_C) $(CFLAGS) $(OBJFILES) -o $(OUTDIR)/metronome $(LFLAGS)
-	cp $(DIR)/metronome-tick.wav $(OUTDIR)/metronome-tick.wav
-module:
+
+module: copy-out-files
 	$(CC_C) $(CFLAGS) $(OBJFILES_MODULE) -o $(OUTDIR)/metronome $(LFLAGS)
-	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
+
+copy-out-files:
+	chmod +x $(DIR)/config-pin-script.sh
+	cp $(DIR)/config-pin-script.sh $(OUTDIR)/config-pin-script.sh
+	cp $(DIR)/metronome-tick.wav $(OUTDIR)/metronome-tick.wav
+	cp $(DIR)/state.bin $(OUTDIR)/state.bin
