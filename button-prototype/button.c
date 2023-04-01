@@ -74,8 +74,8 @@ static void* runSampleLoop()
             b->isPressed = GPIO_getValue(b->gpioPinNum);
             b->timeHeldMs = b->isPressed ? b->timeHeldMs + SAMPLE_RATE_MS : 0;
 
-            printf("is button[%d] pressed? %d\n", i, b->isPressed);
-            printf("is button[%d] held? %d, time held: %d\n", i, isHeld(i), b->timeHeldMs);
+            //printf("is button[%d] pressed? %d\n", i, b->isPressed);
+            //printf("is button[%d] held? %d, time held: %d\n", i, isHeld(i), b->timeHeldMs);
         }
         delayMs(SAMPLE_RATE_MS);
     }
@@ -92,7 +92,8 @@ static void delayMs(long long ms)
     nanosleep(&ts, (struct timespec *)NULL);
 }
 
-int isPressed(enum buttons button) { return buttons[button].isPressed; }
+int isPressed(enum buttons button) { return buttons[button].isPressed && !isHeld(button); }
 int isHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].holdDelayMs; }
+int getTimeHeld(enum buttons button) {  return buttons[button].timeHeldMs; }
 int getHoldDelay(enum buttons button) { return buttons[button].holdDelayMs; }
 void setHoldDelay(enum buttons button, int holdDelayMs) { buttons[button].holdDelayMs = holdDelayMs; }

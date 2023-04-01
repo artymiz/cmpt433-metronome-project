@@ -1,3 +1,5 @@
+#ifndef GPIO_H
+#define GPIO_H
 /**
  * Usage for output pin: 
  * int pinNumber = 49;
@@ -18,3 +20,5 @@
 int GPIO_getValue(int pin);
 void GPIO_pinMode(int pin, bool isOutput);
 void GPIO_setValue(int pin, bool isHigh);
+
+#endif

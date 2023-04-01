@@ -13,7 +13,6 @@ void GPIO_pinMode(int pin, bool isOut)
 {
     char filename[MAX_FILENAME_LEN];
     sprintf(filename, FILENAME_FMTSTR, pin, "direction");
-    printf("%s\n",filename);
     FILE *directionFile = fopen(filename, "w");
     if (!directionFile) {
         fprintf(stderr, "GPIO ERROR: failed to open %s\n", filename);
@@ -30,7 +29,6 @@ void GPIO_pinMode(int pin, bool isOut)
 
 int GPIO_getValue(int pin)
 {
-    printf(" ");
     char filename[MAX_FILENAME_LEN];
     sprintf(filename, FILENAME_FMTSTR, pin, "value");
     FILE *valueFile = fopen(filename, "r");

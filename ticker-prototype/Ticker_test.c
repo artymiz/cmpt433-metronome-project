@@ -6,7 +6,7 @@
 
 pthread_t tempoChangerThread;
 
-void *tempoChangerRoutine(void *args)
+void *playPauseRoutine(void *args)
 {
     while (1)
     {
@@ -24,7 +24,7 @@ int main(int argc, char const *argv[])
     Audio_init();
     State_read();
     Ticker_init();
-    pthread_create(&tempoChangerThread, NULL, tempoChangerRoutine, NULL);
+    pthread_create(&tempoChangerThread, NULL, playPauseRoutine, NULL);
     sleep(10);
     pthread_cancel(tempoChangerThread);
     pthread_join(tempoChangerThread, NULL);

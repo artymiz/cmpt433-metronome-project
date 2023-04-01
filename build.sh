@@ -1,21 +1,49 @@
 #!/bin/sh
-TARGETDIR = $HOME/cmpt433/public/cmpt433-metronome-project
+TARGETDIR=$HOME/cmpt433/public/cmpt433-metronome-project
 
 echo "\e[40m\e[92m [Making and binning o files from button-prototype] \e[0m"
-make -f button-prototype/Makefile
+	if make -f button-prototype/Makefile
+	then
+		echo "\e[40m\e[92m [Finished] \e[0m"
+	else
+		echo "\e[40m\e[31m [Build failed to compile button-prototype] \e[0m"
+	fi
 
 echo "\e[40m\e[92m [Making and binning o files from ticker-prototype] \e[0m"
-make -f ticker-prototype/Makefile
+	if make -f ticker-prototype/Makefile
+	then
+		echo "\e[40m\e[92m [Finished] \e[0m"
+	fi
 
 echo "\e[40m\e[92m [Making and binning main.o] \e[0m"
-make -f Makefile
+	if make -f Makefile
+	then
+		echo "\e[40m\e[92m [Finished] \e[0m"
+	else
+		echo "\e[40m\e[31m [Build failed to compile ticker-prototype] \e[0m"
+	fi
 
 echo "\e[40m\e[92m [Linking libraries in bin and sending executable to target] \e[0m"
-make -f obj/Makefile
+	if	make -f obj/Makefile
+	then
+		echo "\e[40m\e[92m [Finished] \e[0m"
+	else
+		echo "\e[40m\e[31m [Build failed at linking stage] \e[0m"
+	fi
 
 echo "\e[40m\e[92m [Sending out (.sh, .wav, etc) files to target] \e[0m"
+	echo "chmod on config-pin-script.sh"
 	sudo chmod +x out/config-pin-script.sh
+	echo "sending config-pin-script.sh to target"
 	sudo cp out/config-pin-script.sh $TARGETDIR/config-pin-script.sh
+	echo "sending metronome-tick.wav to target"
 	sudo cp out/metronome-tick.wav $TARGETDIR/metronome-tick.wav
-	sudo cp out/state.bin $TARGETDIR/state.bin
+	echo "sending state.bin to target"
+	if	sudo cp out/state.bin $TARGETDIR/state.bin
+	then 
+		echo "\e[40m\e[92m [Finished] \e[0m"
+	else
+		echo "\e[40m\e[31m [Build failed at copying files out to target] \e[0m"
+	fi
 
+echo "\e[40m\e[92m [Build finished] \e[0m"
