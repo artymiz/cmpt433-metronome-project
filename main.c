@@ -86,15 +86,19 @@ void *recordBPMRoutine(void* args)
     while (1)
     {
         int bpm = calculateBPM();
-        printf("bpm before record: %d\n", bpm);
+        //printf("bpm before record: %d\n", bpm);
         //todo: check if in record mode
         //if (in record mode) {
         recordButtonPress(BUTTON_PLAY_PAUSE_SHUTDOWN); // change to recordButtonPress(BUTTON_INCREASE_TEMPO)
         //}
-        printf("bpm after record: %d\n", bpm);
         delayMs(20);
-        
+        if (bpm != -1) 
+        {
+            printf("bpm after record: %d\n", bpm);
+            break;
+        }
     }
+    return NULL;
 }
 
 int main()

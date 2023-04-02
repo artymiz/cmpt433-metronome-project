@@ -7,8 +7,8 @@
 #define BPM_BUFFER_SIZE 8
 //circular buffer that has the history of each time the button was pressed
 static long long buttonPressHistoryNanoS[BPM_BUFFER_SIZE];
-static unsigned int historyIndex = 0;
-static int bpm = 0;
+static unsigned int nextHistEntryIdx = 0;
+static long long bpm = 0;
 
 static long long getTimeInNanoS(void);
 
@@ -20,32 +20,43 @@ void recordButtonPress(enum buttons button)
     //and time held is not yet updated
     if (isPressed(button) && getTimeHeld(button) <= 20)
     {
-        buttonPressHistoryNanoS[historyIndex % 8] = getTimeInNanoS();
-        ++historyIndex;
+        buttonPressHistoryNanoS[nextHistEntryIdx % 8] = getTimeInNanoS();
+        printf("TIME OF EVENT: %lld\n", buttonPressHistoryNanoS[nextHistEntryIdx % 8]);
+        ++nextHistEntryIdx;
     }
 }
 
 //calculates bpm from current buffer and returns it
 //returns -1 if history is empty
-int calculateBPM() 
+long long calculateBPM() 
 {
-    if (historyIndex < BPM_BUFFER_SIZE)
+    if (nextHistEntryIdx < BPM_BUFFER_SIZE)
     {
-        printf("Button timing history is not filled - more data required before caclulating BPM\n");
+        //printf("Button timing history is not filled - more data required before caclulating BPM\n");
         return -1;
     }
-    const long long NS_PER_MS = 1000000;
+    const long long NS_PER_S = 1000000000 * 60LL;
     long long sumNanoS = 0;
-    for (int i = 0; i < historyIndex - 1; ++i)
+    int i = (nextHistEntryIdx - (BPM_BUFFER_SIZE));
+    for (int iters = 0; iters < BPM_BUFFER_SIZE - 1; ++iters, ++i)
     {
         //time of i+1's event - time of i's event = time between 2 presses
-        sumNanoS = buttonPressHistoryNanoS[i + 1] - buttonPressHistoryNanoS[i];
+
+        printf("BEFORE: %lld\n", sumNanoS);
+        sumNanoS += buttonPressHistoryNanoS[(i + 1) % BPM_BUFFER_SIZE] - buttonPressHistoryNanoS[i % BPM_BUFFER_SIZE];
+        printf("AFTER: %lld\n", sumNanoS);
     }
-    bpm = sumNanoS / historyIndex / NS_PER_MS;
+    printf("%lld\n", sumNanoS);
+    
+
+    long long avgBeatNano = sumNanoS / (BPM_BUFFER_SIZE - 1);
+    //ns/min / ns/beat
+    bpm = NS_PER_S / avgBeatNano;
+    //bpm = ((NS_PER_S) / (sumNanoS / (BPM_BUFFER_SIZE - 1)));
     return bpm;
 }
 
-int getBPM() 
+long long getBPM() 
 {
     return bpm;
 }
@@ -53,12 +64,12 @@ int getBPM()
 void clearHistory() 
 {
     memset(buttonPressHistoryNanoS, 0, sizeof(*buttonPressHistoryNanoS) * BPM_BUFFER_SIZE);
-    historyIndex = 0;
+    nextHistEntryIdx = 0;
 }
 
 void initButtonHistory()
 {
-    historyIndex = 0;    
+    nextHistEntryIdx = 0;    
     memset(buttonPressHistoryNanoS, 0, sizeof(*buttonPressHistoryNanoS) * BPM_BUFFER_SIZE);
 }
 

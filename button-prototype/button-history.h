@@ -3,8 +3,8 @@
 #include "button.h"
 
 void recordButtonPress(enum buttons button);
-int calculateBPM();
-int getBPM();
+long long calculateBPM();
+long long getBPM();
 void clearHistory();
 void initButtonHistory();
 
