@@ -26,13 +26,11 @@ LFLAGS = -L$(HOME)/cmpt433/public/asound_lib_BBG
 all: Ticker_test
 
 Ticker_test:
-	touch $(OUTDIR)/state.bin
 	$(CC_C) $(CFLAGSLIB) $(DIR)/Audio.c -o $(OBJDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) $(DIR)/State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) $(DIR)/Ticker.c -o $(OBJDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
 	cp $(DIR)/metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 module:
-	touch $(OUTDIR)/state.bin
 	$(CC_C) $(CFLAGSLIB) Audio.c -o $(OBJDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) Ticker.c -o $(OBJDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
