@@ -10,5 +10,10 @@ OBJFILES_MODULE = button.o GPIO.o State.o Ticker.o Audio.o button-history.o main
 
 TARGETDIR = $(HOME)/cmpt433/public/cmpt433-metronome-project
 
-all:
+all: test-ticker
 	$(CC_C) $(CFLAGS) $(OBJFILES_MODULE) -o $(TARGETDIR)/metronome $(LFLAGS)
+
+OBJFILES_TICKER = Audio.o Ticker.o State.o Ticker_test.o
+
+test-ticker:
+	$(CC_C) $(CFLAGS) $(OBJFILES_TICKER) -o $(TARGETDIR)/Ticker_test $(LFLAGS)
