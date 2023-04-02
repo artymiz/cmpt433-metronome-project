@@ -7,7 +7,6 @@ OBJDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/obj
 OUTDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/out
 CROSS_TOOL = arm-linux-gnueabihf-
 CC_C = $(CROSS_TOOL)gcc
-DIR = ticker-prototype
 CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -Werror
 CFLAGSLIB = -Wall -g -c -std=c99 -D _POSIX_C_SOURCE=200809L -Werror
 
@@ -26,12 +25,6 @@ LFLAGS = -L$(HOME)/cmpt433/public/asound_lib_BBG
 all: Ticker_test
 
 Ticker_test:
-	touch $(OUTDIR)/state.bin
-	$(CC_C) $(CFLAGSLIB) $(DIR)/Audio.c -o $(OBJDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) $(DIR)/State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) $(DIR)/Ticker.c -o $(OBJDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
-	cp $(DIR)/metronome-tick.wav $(OUTDIR)/metronome-tick.wav
-module:
 	touch $(OUTDIR)/state.bin
 	$(CC_C) $(CFLAGSLIB) Audio.c -o $(OBJDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound

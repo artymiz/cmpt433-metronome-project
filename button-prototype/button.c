@@ -4,7 +4,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define DEFAULT_HOLD_DELAY_MS 200
+#define DEFAULT_SHORT_HOLD_DELAY_MS 200
+#define DEFAULT_LONG_HOLD_DELAY_MS 500
 #define SAMPLE_RATE_MS 20
 
 static void delayMs(long long ms);
@@ -20,11 +21,13 @@ int isRunning = 1;
 //but have a play/pause button with a long hold delay that, when held, will kill the program 
 struct button_t {
     int gpioPinNum;
-    //how long the button needs to be held until it is considered held down/long-pressed
-    int holdDelayMs;
+    //how long the button needs to be held until it is considered held down for a short time
+    int shortHoldDelayMs;
+    //how long the button needs to be held until it is considered held down for a long time
+    int longHoldDelayMs;
     //this will be true for up to SAMPLE_RATE_MS + jitter
     int isPressed;
-    //this will be true for as long as the button is being sampled as true for longer than holdDelayMs
+    //this will be true for as long as the button is being sampled as true for longer than shortHoldDelayMs
     int timeHeldMs;
 };
 static struct button_t buttons[NUM_BUTTONS];
@@ -41,7 +44,7 @@ void initButtons(int* gpioPinNumbers, int numButtons)
     for (int i = 0; i < NUM_BUTTONS; ++i) 
     {
         buttons[i].gpioPinNum   = gpioPinNumbers[i];
-        buttons[i].holdDelayMs  = DEFAULT_HOLD_DELAY_MS;
+        buttons[i].shortHoldDelayMs  = DEFAULT_SHORT_HOLD_DELAY_MS;
         buttons[i].timeHeldMs   = 0;
         buttons[i].isPressed    = 0;
         bool isOutput = false;
@@ -57,7 +60,7 @@ void cleanupButtons()
     for (int i = 0; i < NUM_BUTTONS; ++i) {
         //set all button data to be invalid for soft resets
         buttons[i].gpioPinNum   = -1;
-        buttons[i].holdDelayMs  = -1;
+        buttons[i].shortHoldDelayMs  = -1;
         buttons[i].timeHeldMs   = -1;
         buttons[i].isPressed    = -1;
     }
@@ -75,7 +78,7 @@ static void* runSampleLoop()
             b->timeHeldMs = b->isPressed ? b->timeHeldMs + SAMPLE_RATE_MS : 0;
 
             //printf("is button[%d] pressed? %d\n", i, b->isPressed);
-            //printf("is button[%d] held? %d, time held: %d\n", i, isHeld(i), b->timeHeldMs);
+            //printf("is button[%d] held? %d, time held: %d\n", i, isShortHeld(i), b->timeHeldMs);
         }
         delayMs(SAMPLE_RATE_MS);
     }
@@ -92,8 +95,13 @@ static void delayMs(long long ms)
     nanosleep(&ts, (struct timespec *)NULL);
 }
 
-int isPressed(enum buttons button) { return buttons[button].isPressed && !isHeld(button); }
-int isHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].holdDelayMs; }
+int isPressed(enum buttons button) { return buttons[button].isPressed && !isShortHeld(button); }
+int isShortHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].shortHoldDelayMs; }
+int isLongHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].longHoldDelayMs; }
 int getTimeHeld(enum buttons button) {  return buttons[button].timeHeldMs; }
-int getHoldDelay(enum buttons button) { return buttons[button].holdDelayMs; }
-void setHoldDelay(enum buttons button, int holdDelayMs) { buttons[button].holdDelayMs = holdDelayMs; }
+
+int getShortHoldDelay(enum buttons button) { return buttons[button].shortHoldDelayMs; }
+void setShortHoldDelay(enum buttons button, int shortHoldDelayMs) { buttons[button].shortHoldDelayMs = shortHoldDelayMs; }
+
+int getLongHoldDelay(enum buttons button) { return buttons[button].longHoldDelayMs; }
+void setLongHoldDelay(enum buttons button, int longHoldDelayMs) { buttons[button].longHoldDelayMs = longHoldDelayMs; }
