@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 int main(int argc, char const *argv[])
 {
@@ -10,7 +11,11 @@ int main(int argc, char const *argv[])
     const int bufLen = edge * edge * 3;
     uint8_t buf[bufLen];
     memset(buf, 0, bufLen);
-    Display_memoryWrite(buf, 10, 50, edge, edge);
+    memset(buf, 0xFF, edge * 3);
+    for (int i = 0; i < COL_MAX; i += 20) {
+        Display_memoryWrite(buf, i, i, edge, edge);
+        sleep(1);
+    }
     Display_cleanup();
     return 0;
 }
