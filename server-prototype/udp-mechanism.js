@@ -19,13 +19,13 @@ exports.listen = function(server) {
 
 function handleCommand(socket) {
 	// Passed string of command to relay
-	socket.on('metronome', function(data) {
-		console.log('metronome command: ' + data);
+	socket.on('command-send', function(command) {
+		console.log('metronome command: ' + command);
 		
 		// Info for connecting to the local process via UDP
 		var PORT = 12345;
 		var HOST = '192.168.7.2';
-		var buffer = new Buffer(data);
+		var buffer = new Buffer(command);
 
 		var client = dgram.createSocket('udp4');
 		client.send(buffer, 0, buffer.length, PORT, HOST, function(err, bytes) {
