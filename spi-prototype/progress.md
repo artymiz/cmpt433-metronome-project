@@ -164,3 +164,10 @@ Using p9.15 to control CS: need to do this because write cycle sequence on page 
 
 Able to do everything? that could be done previously using this method!
 
+*3/27*
+
+By setting D/C low mid-transfer, we can use commands with parameters, for example "column address set".
+
+Column address set and page address set effectively move the draw cursor to a certain position and cause it to wrap around differently.
+
+spi-prototype.c: draws a square!

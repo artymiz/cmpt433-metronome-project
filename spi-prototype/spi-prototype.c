@@ -23,6 +23,9 @@
 
 #define INIT_GPIO GPIO_pinMode(CS_PIN, true); GPIO_pinMode(RST_PIN, true); GPIO_pinMode(DC_PIN, true);
 
+#define COL_MAX 240
+#define ROW_MAX 320
+
 static int spiFileDesc = -1;
 
 typedef struct command {
@@ -31,14 +34,14 @@ typedef struct command {
     uint8_t response_size;
 } command_t;
 
-command_t NOP = {0x00, 0, 0}; // No operation
-command_t SLEEP_OUT = {0x11, 0, 0}; // Wake up
-command_t DISPLAY_ON = {0x29, 0, 0}; // Wake up
-command_t COL_ADDR_SET = {0x2A, 4, 0}; // Column address set (for memory write)
-command_t PAGE_ADDR_SET = {0x2A, 4, 0}; // Row address set (for memory write)
-command_t MEMORY_WRITE = {0x2C, 0, 0}; // Memory write (signal start of pixel data)
-command_t READ_POWER_MODE = {0x0A, 0, 1};
-command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
+static const command_t NOP                 = {0x00, 0, 0};  // No operation
+static const command_t SLEEP_OUT           = {0x11, 0, 0};  // Wake up
+static const command_t DISPLAY_ON          = {0x29, 0, 0};  // Wake up
+static const command_t COL_ADDR_SET        = {0x2A, 4, 0};  // Column address set (for memory write)
+static const command_t PAGE_ADDR_SET       = {0x2B, 4, 0};  // Row address set (for memory write)
+static const command_t MEMORY_WRITE        = {0x2C, 0, 0};  // Memory write (signal start of pixel data)
+static const command_t READ_POWER_MODE     = {0x0A, 0, 1};
+static const command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
 
 int spiInit(char* spiDevice)
 {
@@ -68,6 +71,7 @@ void delayMs(long long ms)
     nanosleep(&ts, (struct timespec *)NULL);
 }
 
+// Does not touch CS or D/C
 void spiTransfer(uint8_t *sendBuf, uint8_t *receiveBuf, int length)
 {
     // Setting transfer this way ensures all other fields are 0
@@ -104,8 +108,8 @@ uint8_t *sendCommand(command_t c, uint8_t *params)
     size_t txBufSize = c.num_params;
     size_t rxBufSize = c.response_size;
     size_t bufSize = txBufSize > rxBufSize ? txBufSize : rxBufSize; // max
-    uint8_t *txBuf = malloc(bufSize);
-    uint8_t *rxBuf = malloc(bufSize);    
+    uint8_t *txBuf = malloc(bufSize); // command parameters
+    uint8_t *rxBuf = malloc(bufSize); // data sent back from display
     memset(txBuf, 0, bufSize);
     memset(rxBuf, 0, bufSize);
 
@@ -128,6 +132,47 @@ uint8_t *sendCommand(command_t c, uint8_t *params)
         return NULL;
     }
     return rxBuf;
+}
+
+// https://codereview.stackexchange.com/questions/151049/endianness-conversion-in-c
+uint16_t reverse16(uint16_t value)
+{
+    return (((value & 0x00FF) << 8) |
+            ((value & 0xFF00) >> 8));
+}
+
+// https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf page 14: 
+// Column address set, Row address set, then memory write.
+// Also same as: https://github.com/adafruit/Adafruit_ILI9341/blob/master/Adafruit_ILI9341.cpp (setAddrWindow)
+void setMemoryWriteArea(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
+{
+    uint16_t x1 = x0 + w - 1;
+    uint16_t y1 = y0 + h - 1;
+
+    assert(x0 < x1);
+    assert(x1 < COL_MAX); // 0 - 239 (0 indexed)
+    assert(y0 < y1);
+    assert(y1 < ROW_MAX); // 0 - 319 (0 indexed)
+    
+    // Convert from little endian to big endian.
+    x0 = reverse16(x0);
+    x1 = reverse16(x1);
+    y0 = reverse16(y0);
+    y1 = reverse16(y1);
+
+    // Restrict columns to write.
+    uint8_t colStartEnd[4];
+    memset(colStartEnd, 0, 4);
+    memcpy(colStartEnd, &x0, 2);
+    memcpy(colStartEnd + 2, &x1, 2);
+    sendCommand(COL_ADDR_SET, colStartEnd);
+
+    // Restrict rows to write.
+    uint8_t rowStartEnd[4];
+    memset(rowStartEnd, 0, 4);
+    memcpy(rowStartEnd, &x0, 2);
+    memcpy(rowStartEnd + 2, &x1, 2);
+    sendCommand(PAGE_ADDR_SET, rowStartEnd);
 }
 
 int main(void)
@@ -160,6 +205,38 @@ int main(void)
     // printCommandResponse(READ_POWER_MODE, powerMode);
     assert(powerMode[0] == 0x9C);
     free(powerMode);
+
+    /* ---- Write white screen. ---- */
+    
+    sendCommand(MEMORY_WRITE, NULL);
+    
+    const int byteLineCount = COL_MAX * 3; // 720 bytes per line
+    uint8_t databufLine[byteLineCount];
+    memset(databufLine, 0xFF, byteLineCount);
+    for (size_t i = 0; i < ROW_MAX; i++)
+    {
+        CS_LOW
+        spiTransfer(databufLine, NULL, byteLineCount);
+        CS_HIGH
+    }
+    
+    sendCommand(NOP, NULL);
+    
+    /* ---- Write 1 black square pixels. ---- */
+
+    const int squareEdge = 20;
+    setMemoryWriteArea(squareEdge, squareEdge, squareEdge, squareEdge);
+    
+    sendCommand(MEMORY_WRITE, NULL);
+
+    const int byteCount = squareEdge * squareEdge * 3; // 3 bytes per pixel
+    uint8_t databufSquare[byteCount];
+    memset(databufSquare, 0x00, byteCount);
+    CS_LOW
+    spiTransfer(databufSquare, NULL, byteCount);
+    CS_HIGH
+
+    sendCommand(NOP, NULL);
 
     return 0;
 }
