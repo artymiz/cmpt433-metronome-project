@@ -35,24 +35,16 @@ long long calculateBPM()
         //printf("Button timing history is not filled - more data required before caclulating BPM\n");
         return -1;
     }
-    const long long NS_PER_S = 1000000000 * 60LL;
+    const long long NS_PER_MIN = 1000000000 * 60LL;
     long long sumNanoS = 0;
     int i = (nextHistEntryIdx - (BPM_BUFFER_SIZE));
     for (int iters = 0; iters < BPM_BUFFER_SIZE - 1; ++iters, ++i)
     {
         //time of i+1's event - time of i's event = time between 2 presses
-
-        printf("BEFORE: %lld\n", sumNanoS);
         sumNanoS += buttonPressHistoryNanoS[(i + 1) % BPM_BUFFER_SIZE] - buttonPressHistoryNanoS[i % BPM_BUFFER_SIZE];
-        printf("AFTER: %lld\n", sumNanoS);
     }
-    printf("%lld\n", sumNanoS);
-    
-
-    long long avgBeatNano = sumNanoS / (BPM_BUFFER_SIZE - 1);
     //ns/min / ns/beat
-    bpm = NS_PER_S / avgBeatNano;
-    //bpm = ((NS_PER_S) / (sumNanoS / (BPM_BUFFER_SIZE - 1)));
+    bpm = NS_PER_MIN / (sumNanoS / (BPM_BUFFER_SIZE - 1));
     return bpm;
 }
 
