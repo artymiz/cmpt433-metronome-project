@@ -13,7 +13,7 @@ echo "\e[40m\e[92m [Making and binning o files from button-prototype] \e[0m"
 
 echo "\e[40m\e[92m [Making and binning o files from ticker-prototype] \e[0m"
 	cd ticker-prototype
-	if make -f ticker-prototype/Makefile
+	if make -f Makefile
 	then
 		echo "\e[40m\e[92m [Finished] \e[0m"
 	fi

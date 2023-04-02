@@ -30,7 +30,7 @@ Ticker_test:
 	$(CC_C) $(CFLAGSLIB) State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) Ticker.c -o $(OBJDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
 	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
-	cp $(DIR)/State.txt $(OUTDIR)/State.txt
+	cp State.txt $(OUTDIR)/State.txt
 # ticker:
 # 	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
 
