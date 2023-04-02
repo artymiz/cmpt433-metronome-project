@@ -30,10 +30,13 @@ Ticker_test:
 	$(CC_C) $(CFLAGSLIB) State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) Ticker.c -o $(OBJDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
 	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
+	cp $(DIR)/State.txt $(OUTDIR)/State.txt
 # ticker:
 # 	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
 
-# TODO: should be able to copy the human-readable config file for the metronome and have it apply
+# Copy wav file
+wav:
+	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 
 State_test: State.c State_test.c
 	gcc -g State.c State_test.c -o State_test
