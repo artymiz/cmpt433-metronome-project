@@ -1,28 +1,14 @@
-// State can only store non-pointer values!
-typedef struct State
-{
-    int bpm;
-    int volume;
-    int beatsPerBar;
-} State_t;
+// State is described with integers State.txt
 
-#define DEFAULT_BPM 120
-#define DEFAULT_VOLUME 80
-#define DEFAULT_BEATSPERBAR 4
+#define STATECOUNT 3 // How many integers in state.
 
-#define MIN_BPM 1
-#define MIN_VOLUME 0
-#define MIN_BEATSPERBAR 1
+typedef enum stateid {
+    ID_BPM,
+    ID_VOLUME,
+    ID_BEATSPERBAR
+} stateid_t;
 
-#define MAX_VOLUME 100
-
-void State_read();
-void State_write();
-
-int State_getVolume();
-int State_getBpm();
-int State_getBeatsPerBar();
-
-void State_setVolume(int newVolume);
-void State_setBpm(int newBpm);
-void State_setBeatsPerBar(int newBeatsPerBar);
+void State_load(void);
+void State_store(void);
+int State_get(stateid_t id);
+void State_set(stateid_t id, int val);

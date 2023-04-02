@@ -1,42 +1,59 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "State.h"
 
-static State_t state = {
-    .bpm = DEFAULT_BPM, 
-    .volume = DEFAULT_VOLUME, 
-    .beatsPerBar = DEFAULT_BEATSPERBAR
-};
+static int state[STATECOUNT]; // bpm, volume, beatsPerBar
+// exclusive boundaries for state values
+static float stateMins[] = {0, -1, 0};
+static float stateMaxs[] = {INFINITY, 101, INFINITY};
 
-static bool emptyFile(FILE *f)
+// File to array
+void State_load()
 {
-    fseek(f, 0, SEEK_END);
-    bool isEmpty = (ftell(f) == 0);
-    fseek(f, 0, SEEK_SET);
-    return isEmpty;
+    FILE *fState = fopen("State.txt", "r");
+    if (!fState) {
+        perror("Cannot open State.txt");
+        exit(1);
+    }
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int id = 0;
+    while ((read = getline(&line, &len, fState)) != -1) {
+        state[id] = atoi(line);
+        id++;
+    }
+    free(line);
+    fclose(fState);
 }
 
-void State_read()
+// Array to file
+void State_store()
 {
-    FILE *fState = fopen("state.bin", "r");
-    if (!emptyFile(fState)) 
+    FILE *fState = fopen("State.txt", "w");
+    for (size_t id = 0; id < STATECOUNT; id++)
     {
-        fread(&state, sizeof(State_t), 1, fState);
+        char str[5]; // 3 digits, newline, line terminator
+        sprintf(str, "%d\n", state[id]);
+        fwrite(str, 1, strlen(str), fState);
     }
     fclose(fState);
 }
 
-void State_write()
+int State_get(stateid_t id) 
 {
-    FILE *fState = fopen("state.bin", "w");
-    fwrite(&state, sizeof(State_t), 1, fState);
-    fclose(fState);
+    return state[id];
 }
 
-int State_getVolume() {return state.volume;}
-int State_getBpm() {return state.bpm;}
-int State_getBeatsPerBar() {return state.beatsPerBar;}
-
-void State_setVolume(int newVolume) {state.volume = newVolume;}
-void State_setBpm(int newBpm) {state.bpm = newBpm;}
-void State_setBeatsPerBar(int newBeatsPerBar) {state.beatsPerBar = newBeatsPerBar;}
+void State_set(stateid_t id, int val)
+{
+    float valFloat = val;
+    if (valFloat > stateMins[id] && valFloat < stateMaxs[id])
+    {
+        state[id] = val;
+    }
+}
