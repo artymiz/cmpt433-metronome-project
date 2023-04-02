@@ -7,8 +7,8 @@ const tempoInputElement = document.getElementById('tempoval')
 socket.on('command-reply', (reply) => {
     if (!connection_status) {
         connection_status = !connection_status
-        $('#online_status')[0].style.color = 'green'
-        $('#online_status')[0].innerText = 'online'
+        $('#online-status-header')[0].style.color = 'green'
+        $('#online-status-header')[0].innerText = 'online'
         $('#status')[0].hidden = false
     }
     const [type, value] = reply.split(' ')
@@ -23,7 +23,7 @@ socket.on('command-reply', (reply) => {
     }
 })
 
-$('#tempoDecrease').click(() => {
+$('#tempo-decrease-btn').click(() => {
     if (connection_status) {
         let val = parseInt(tempoInputElement.value)
         val = val - 5 > 40 ? val - 5 : 40
@@ -32,7 +32,7 @@ $('#tempoDecrease').click(() => {
     }
 })
 
-$('#tempoIncrease').click(() => {
+$('#tempo-increase-btn').click(() => {
     if (connection_status) {
         let val = parseInt(tempoInputElement.value)
         val = val + 5 < 200 ? val + 5 : 200
