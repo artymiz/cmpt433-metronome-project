@@ -40,15 +40,15 @@ void *playPauseRoutine(void *args)
             isPaused = !isPaused;
             if (isPaused)
             {
-                bpmBeforePause = State_getBpm();
-                State_setBpm(0);
-                printf("Pausing, bpm was set to: %d before pausing.\n", State_getBpm());
+                bpmBeforePause = State_get(ID_BPM);
+                State_set(ID_BPM, 0);
+                printf("Pausing, bpm was set to: %d before pausing.\n", bpmBeforePause);
                 delayMs(PLAY_PAUSE_DELAY_LONG);
             }
             else
             {
-                State_setBpm(bpmBeforePause);
-                printf("Resuming, bpm is set to: %d\n", State_getBpm());
+                State_set(ID_BPM, bpmBeforePause);
+                printf("Resuming, bpm is set to: %d\n", State_get(ID_BPM));
                 delayMs(PLAY_PAUSE_DELAY_LONG);
             }
         }
@@ -64,14 +64,16 @@ void *tempoChangerRoutine(void *args)
     {
         if (isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to isPressed(BUTTON_INCREASE_TEMPO)
         {
-            State_setBpm(State_getBpm() + 5);
-            printf("BPM increased to: %d\n", State_getBpm());
+            int newBpm = State_get(ID_BPM) + 5;
+            State_set(ID_BPM, newBpm);
+            printf("BPM increased to: %d\n", State_get(ID_BPM));
             delayMs(200);
         }
         if (isHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to isPressed(BUTTON_DECREASE_TEMPO)
         {
-            State_setBpm(State_getBpm() - 5);
-            printf("BPM decreased to: %d\n", State_getBpm());
+            int newBpm = State_get(ID_BPM) - 5;
+            State_set(ID_BPM, newBpm);
+            printf("BPM decreased to: %d\n", State_get(ID_BPM));
             delayMs(200);
         }
         delayMs(PLAY_PAUSE_DELAY_SHORT);
@@ -108,14 +110,14 @@ int main()
     initButtons(gpioPins, NUM_BUTTONS);
     setHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, ON_OFF_HOLD_DELAY);
     Audio_init();
-    State_read();
+    State_load();
     Ticker_init();
     pthread_create(&tempoChangerThread, NULL, recordBPMRoutine, NULL);
     sleep(10);
     pthread_cancel(tempoChangerThread);
     pthread_join(tempoChangerThread, NULL);
     Ticker_cleanup();
-    State_write();
+    State_store();
     Audio_cleanup();
     //sleep(1);
     return 0;

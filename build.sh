@@ -38,8 +38,8 @@ echo "\e[40m\e[92m [Sending out (.sh, .wav, etc) files to target] \e[0m"
 	sudo cp out/config-pin-script.sh $TARGETDIR/config-pin-script.sh
 	echo "sending metronome-tick.wav to target"
 	sudo cp out/metronome-tick.wav $TARGETDIR/metronome-tick.wav
-	echo "sending state.bin to target"
-	if	sudo cp out/state.bin $TARGETDIR/state.bin
+	echo "sending State.txt to target"
+	if	sudo cp out/State.txt $TARGETDIR/State.txt
 	then 
 		echo "\e[40m\e[92m [Finished] \e[0m"
 	else
