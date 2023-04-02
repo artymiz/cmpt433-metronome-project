@@ -77,7 +77,7 @@ static void writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t y
 
     // set white space at the left side of the character
     if (leadingSpace > 0) {
-        uint16_t n = leadingSpace * h * RGB_LEN;
+        uint16_t n = leadingSpace * h * fontsize * RGB_LEN;
         uint16_t offset = h * w * RGB_LEN - n;
         memset(buff + offset, 0xff, n);
     }
