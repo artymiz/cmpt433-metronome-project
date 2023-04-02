@@ -13,6 +13,7 @@ TARGETDIR = $(HOME)/cmpt433/public/cmpt433-metronome-project
 
 all:
 	$(CC_C) $(CFLAGS) $(OBJFILES) -o $(TARGETDIR)/metronome $(LFLAGS)
+	$(CC_C) $(CFLAGS) $(DIR)/State.o $(DIR)/State_test.o -o $(TARGETDIR)/State_test $(LFLAGS)
 
 module: copy-out-files
 	$(CC_C) $(CFLAGS) $(OBJFILES_MODULE) -o $(TARGETDIR)/metronome $(LFLAGS)

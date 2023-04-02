@@ -35,11 +35,11 @@ echo "\e[40m\e[92m [Sending out (.sh, .wav, etc) files to target] \e[0m"
 	echo "chmod on config-pin-script.sh"
 	sudo chmod +x out/config-pin-script.sh
 	echo "sending config-pin-script.sh to target"
-	sudo cp out/config-pin-script.sh $TARGETDIR/config-pin-script.sh
+	cp out/config-pin-script.sh $TARGETDIR/config-pin-script.sh
 	echo "sending metronome-tick.wav to target"
-	sudo cp out/metronome-tick.wav $TARGETDIR/metronome-tick.wav
+	cp out/metronome-tick.wav $TARGETDIR/metronome-tick.wav
 	echo "sending State.txt to target"
-	if	sudo cp out/State.txt $TARGETDIR/State.txt
+	if cp out/State.txt $TARGETDIR/State.txt
 	then 
 		echo "\e[40m\e[92m [Finished] \e[0m"
 	else

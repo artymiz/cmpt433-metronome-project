@@ -35,6 +35,11 @@ void State_load()
 void State_store()
 {
     FILE *fState = fopen("State.txt", "w");
+    if (!fState)
+    {
+        perror("Cannot open State.txt");
+        exit(1);
+    }
     for (size_t id = 0; id < STATECOUNT; id++)
     {
         char str[5]; // 3 digits, newline, line terminator
