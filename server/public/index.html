@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+	<title>BeagleBone Metronome</title>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel='stylesheet' href='/styles/style.css'></link>
+<body>
+
+<form>
+	<h1>BeagleBone Metronome</h1>
+	<div>by the Time Keepers</div>
+	
+	<div id='content'>
+		<div id='status-box'>
+			<h2>Metronome's Status</h2>
+			<div>
+				<h3 id="onlne-status-header" style="color: #dc143c">offline</h3>
+				<div id='status' hidden>
+					<h3 id='status-time'></h3>
+				</div>
+			</div>
+		</div>
+		
+		<div id='left-box'>
+			<div id='modediv'>
+				<h2>Tempo</h2>
+				<p>
+					<input type="button" id="tempo-decrease-btn" value=" - "/>
+					<input type="text" id="tempoval" value="???" size="3" readonly/>
+					<input type="button" id="tempo-increase-btn" value=" + "/>
+					(0 - 200)
+				</p>
+			</div>
+			
+		</div>
+		<div id='error-box'>
+			<h2>Server Error</h2>
+			<p>Server error detected. Please resolve error before continuing.</p>
+			<div><code id='error-text'>No error yet... did you hide this div correctly via Javascript? :)</code></div>
+		</div>
+
+	</div>
+</form>
+
+<br />
+
+<script src='/socket.io/socket.io.js' type='text/javascript'></script>
+<script src='http://code.jquery.com/jquery-1.11.1.min.js' type='text/javascript'></script>
+<script src='scripts/metro_ui.js' type='text/javascript'></script>
+
+<form action="/file-submit" method="post" enctype="multipart/form-data">
+<h2>File Upload</h2>
+	<input type="file" name="audio-sample"> <!-- name is important: files['audio-sample'].filepath -->
+	<button type="submit">Submit</button>
+</form>
+
+</body>
+</html>
