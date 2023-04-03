@@ -1,16 +1,34 @@
 
 const PORT_NUMBER = 8042
 
+// Node core modules
 const http = require('http')
 const fs = require('fs')
 const path = require('path')
+
+// 3rd party modules
 const mime = require('mime')
+const formidable = require('formidable');
 
 const server = http.createServer(function (request, response) {
     let filePath = ''
     if (request.url == '/') {
         filePath = 'public/index.html'
-    } else {
+    } 
+    else if (request.url === "/file-submit") {
+        // Handle file submission
+        const form = new formidable.IncomingForm()
+        form.parse(request, (err, fields, files) => {
+            const tmpFilePath = files['audio-sample'].filepath
+            // console.log(filename); // "/tmp/0e1f004f1355cfe6e54daa000" in the /tmp folder on my Linux file system
+            fs.copyFile(tmpFilePath, "./uploads/audio-sample.wav", (err) => { if (err) throw err })
+        })
+        // Redirect to homepage
+        console.log("Successful file transfer")
+        response.writeHead(302, { Location: "/" })
+        response.end()
+    }
+    else {
         filePath = 'public' + request.url
     }
     serveStatic(response, './' + filePath)

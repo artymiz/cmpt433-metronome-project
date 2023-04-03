@@ -6,7 +6,7 @@ const tempoInputElement = document.getElementById('tempoval')
 
 socket.on('command-reply', (reply) => {
     if (!connection_status) {
-        connection_status = !connection_status
+        connection_status = true
         $('#online-status-header')[0].style.color = 'green'
         $('#online-status-header')[0].innerText = 'online'
         $('#status')[0].hidden = false
