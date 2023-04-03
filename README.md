@@ -7,7 +7,7 @@
 Buttons 2,3,4,5 are data changing buttons that support *click* for fine data change and *hold* for coarse data change \
 ALT function in ()
 
-2. VOL - (KEYSIG -)
-3. VOL + (KEYSIG +)
+2. VOL - (TIMESIG -)
+3. VOL + (TIMESIG +)
 4. BPM - (BPMREC)
 5. BPM + (SAMPLE CYCLE)
