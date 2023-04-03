@@ -19,9 +19,23 @@ static void *tickerRoutine(void *args)
     while (1)
     {
         int bpm = State_get(ID_BPM);
-        silence.numSamples = SAMPLE_RATE * (60.0 / bpm);
-        Audio_play(&tick);
-        Audio_play(&silence);
+	if (bpm == 0) 
+	{
+	    fprintf("BPM cannot be zero\n");
+	    exit(1);
+	}
+	bool isPaused = State_get(ID_ISPAUSED);
+	if (isPaused) 
+	{
+	    silence.numSamples = SAMPLE_RATE; // arbitrary number of samples
+	    Audio_play(&silence);
+	}
+	else 
+	{	
+            silence.numSamples = SAMPLE_RATE * (60.0 / bpm) - TICK_SAMPLE_COUNT;
+            Audio_play(&tick);
+            Audio_play(&silence);
+	}
     }
     return NULL;
 }
