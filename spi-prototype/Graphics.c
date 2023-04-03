@@ -7,33 +7,29 @@
 #include "Graphics.h"
 #include <stdio.h>
 
-#define MAX_FONT_SIZE 10
+#define MAX_FONT_SIZE 4
 #define RGB_LEN 3
 #define BLACK 0x000000
 #define WHITE 0xffffff
+#define RED 0xff0000
 
-static uint8_t *_rgb;
+static uint32_t _rgb;
 
 void Graphics_init(void)
 {
     Display_init();
-    _rgb = malloc(RGB_LEN);
-    Graphics_setColor(0, 0, 0);
+    Graphics_setColor(BLACK);
 }
 
-void Graphics_setColor(uint8_t r, uint8_t g, uint8_t b)
+void Graphics_setColor(uint32_t rgb)
 {
-    _rgb[0] = r;
-    _rgb[1] = g;
-    _rgb[2] = b;
+    _rgb = rgb;
 }
 
 static void setPixel(uint8_t *buff, uint8_t bit)
 {
     if (bit == 1) {
-        buff[0] = _rgb[0];
-        buff[1] = _rgb[1];
-        buff[2] = _rgb[2];
+        memcpy(buff, (char*)&_rgb, RGB_LEN);
     } else {
         // set to white background color
         memset(buff, 0xff, RGB_LEN);
@@ -56,7 +52,7 @@ static void setBlock(uint8_t *buff, uint16_t offset, uint8_t bit, uint16_t w, ui
 static void writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t y0,
         uint8_t leadingSpace)
 {
-    assert(fontsize > 0 && fontsize < MAX_FONT_SIZE);
+    assert(fontsize > 0 && fontsize <= MAX_FONT_SIZE);
     const int h = FONT5X7_HEIGHT * fontsize;
     const int w = (FONT5X7_WIDTH + leadingSpace) * fontsize;
 
@@ -86,34 +82,61 @@ static void writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t y
     free(buff);
 }
 
-void Graphics_writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t y0)
+// translates the y position from the top of the screen in landscape
+// to the actual x Display position where the drawing starts
+static uint16_t getDisplayX(uint16_t y0, uint16_t drawingH)
 {
-    writeChar(c, fontsize, x0, y0, 0);
+    return COL_MAX - (y0 + drawingH);
 }
 
-static const uint8_t _char_sep_space = 2;
-
-
-// write a string from the top right corner,
-// in the character's upright orientation, the corner will appear to be bottom right
-void Graphics_writeStr(char *s, uint8_t fontsize, uint16_t x0, uint16_t y0)
+// translates the x position from the left of the screen in landscape
+// to the actual y Display position where the drawing starts
+static uint16_t getDisplayY(uint16_t x0, uint16_t drawingW)
 {
-    size_t len = strlen(s);
-    uint16_t cWidth = (FONT5X7_WIDTH + _char_sep_space) * fontsize;
+    return ROW_MAX - (x0 + drawingW);
+}
+
+void Graphics_writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t y0)
+{
+    uint16_t cWidth = fontsize * FONT5X7_WIDTH;
+    uint16_t cHeight = fontsize * FONT5X7_HEIGHT;
+    writeChar(c, fontsize, getDisplayX(y0, cHeight), getDisplayY(x0, cWidth), 0);
+}
+
+static uint8_t _str_spread = 2;
+
+// sets how far apart the characters are relative to each other.
+// Scales with the font size - #pixel apart = font size * spread
+void Graphics_setStrSpread(uint8_t spread)
+{
+    assert(spread <= MAX_FONT_SIZE);
+    _str_spread = spread;
+}
+
+// write a string from the top right corner of the screen in vertical position,
+// in the character's upright orientation,
+// the corner specified by x0 and y0 will appear to be bottom right
+static void writeStr(char *s, uint8_t fontsize, uint16_t x0, uint16_t y0)
+{
+    size_t n = strlen(s);
+    uint16_t cWidth = (FONT5X7_WIDTH + _str_spread) * fontsize;
     uint16_t y = y0;
 
-    for (int i = len - 1; i > 0; i--, y += cWidth) {
-        writeChar(s[i], fontsize, x0, y, _char_sep_space);
+    for (int i = n - 1; i > 0; i--, y += cWidth) {
+        writeChar(s[i], fontsize, x0, y, _str_spread);
     }
     writeChar(s[0], fontsize, x0, y, 0);
 }
 
-void Graphics_writeCenterStr(char *s, uint8_t fontsize, uint16_t y0)
+void Graphics_writeStr(char *s, uint8_t fontsize, uint16_t x0, uint16_t y0)
 {
+    size_t n = strlen(s);
+    uint16_t sWidth = fontsize * (FONT5X7_WIDTH * n + _str_spread * (n - 1));
+    uint16_t sHeight = fontsize * FONT5X7_HEIGHT;
+    writeStr(s, fontsize, getDisplayX(y0, sHeight), getDisplayY(x0, sWidth));
 }
 
 void Graphics_cleanup(void)
 {
-    free(_rgb);
     Display_cleanup();
 }

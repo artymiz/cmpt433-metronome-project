@@ -7,8 +7,9 @@
 #define _GRAPHICS_H_
 
 void Graphics_init(void);
-void Graphics_setColor(uint8_t r, uint8_t g, uint8_t b);
+void Graphics_setColor(uint32_t rgb);
 void Graphics_writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t y0);
+void Graphics_setStrSpread(uint8_t spread);
 void Graphics_writeStr(char *s, uint8_t fontsize, uint16_t x0, uint16_t y0);
 void Graphics_writeCenterStr(char *s, uint8_t fontsize, uint16_t y0);
 void Graphics_cleanup(void);
