@@ -13,6 +13,7 @@
   "dependencies": {
     "mime": "~1.2.7",
     "socket.io": "~0.9.6",
-    "formidable": "2.1.1"
+    "formidable": "2.1.1",
+    "lodash": "4.17.21"
   }
 }

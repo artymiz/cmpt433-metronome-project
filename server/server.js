@@ -8,20 +8,37 @@ const path = require('path')
 
 // 3rd party modules
 const mime = require('mime')
-const formidable = require('formidable');
+const formidable = require('formidable')
+
+// Function used for naming the next upload file
+// based on the names of the files in uploads.  
+// Valid upload file names are 1.wav ... n.wav.
+function getUploadName() {
+    const maxUploads = 5 // Max number of files in uploads
+    let uploadNumber = 1; // If no other options, overwrite first (oldest) sample.
+    const filenames = fs.readdirSync('uploads')
+    filenameNumbers = filenames.map(elem => Number(elem[0])) // 'x.wav' => x
+    for (let n = 1; n <= maxUploads; n++) {
+        if (!filenameNumbers.includes(n)) {
+            uploadNumber = n;
+            break
+        }
+    }
+    return uploadNumber + '.wav'
+}
 
 const server = http.createServer(function (request, response) {
     let filePath = ''
     if (request.url == '/') {
         filePath = 'public/index.html'
-    } 
+    }
     else if (request.url === "/file-submit") {
         // Handle file submission
         const form = new formidable.IncomingForm()
         form.parse(request, (err, fields, files) => {
             const tmpFilePath = files['audio-sample'].filepath
             // console.log(filename); // "/tmp/0e1f004f1355cfe6e54daa000" in the /tmp folder on my Linux file system
-            fs.copyFile(tmpFilePath, "./uploads/audio-sample.wav", (err) => { if (err) throw err })
+            fs.copyFile(tmpFilePath, "./uploads/" + getUploadName(), (err) => { if (err) throw err })
         })
         // Redirect to homepage
         console.log("Successful file transfer")
