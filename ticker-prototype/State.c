@@ -6,10 +6,20 @@
 #include <math.h>
 #include "State.h"
 
-static int state[STATECOUNT]; // bpm, volume, beatsPerBar
+static int state[STATECOUNT]; // bpm, volume, beatsPerBar, mode (normal/recording), isPaused
 // exclusive boundaries for state values
-static float stateMins[] = {0, -1, 0};
-static float stateMaxs[] = {INFINITY, 101, INFINITY};
+static float stateMins[] = {0,  //BPM
+                            -1, //volume
+                            0,  //beats per bar
+                            -1, //mode
+                            -1  //is paused
+                           };
+static float stateMaxs[] = {INFINITY, //BPM
+                            101,      //volume
+                            INFINITY, //beats per bar
+                            2,        //mode
+                            2         //is paused
+                            };
 
 // File to array
 void State_load()

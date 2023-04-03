@@ -8,3 +8,4 @@ OUTDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/obj
 
 all:
 	$(CC_C) $(CFLAGSLIB) main.c -o $(OUTDIR)/main.o
+	$(CC_C) $(CFLAGSLIB) Metronome.c -o $(OUTDIR)/Metronome.o

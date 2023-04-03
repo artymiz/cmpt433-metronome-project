@@ -1,11 +1,13 @@
 // State is described with integers State.txt
 
-#define STATECOUNT 3 // How many integers in state.
 
 typedef enum stateid {
     ID_BPM,
     ID_VOLUME,
-    ID_BEATSPERBAR
+    ID_BEATSPERBAR,
+    ID_MODE,
+    ID_ISPAUSED,
+    STATECOUNT
 } stateid_t;
 
 void State_load(void);

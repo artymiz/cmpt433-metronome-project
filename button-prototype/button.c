@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #define DEFAULT_SHORT_HOLD_DELAY_MS 200
 #define DEFAULT_LONG_HOLD_DELAY_MS 500
-#define SAMPLE_RATE_MS 20
 
 static void delayMs(long long ms);
 static void* runSampleLoop();
@@ -25,7 +24,7 @@ struct button_t {
     int shortHoldDelayMs;
     //how long the button needs to be held until it is considered held down for a long time
     int longHoldDelayMs;
-    //this will be true for up to SAMPLE_RATE_MS + jitter
+    //this will be true for up to BUTTON_SAMPLE_RATE_MS + jitter
     int isPressed;
     //this will be true for as long as the button is being sampled as true for longer than shortHoldDelayMs
     int timeHeldMs;
@@ -50,7 +49,7 @@ void initButtons(int* gpioPinNumbers, int numButtons)
         bool isOutput = false;
         GPIO_pinMode(buttons[i].gpioPinNum, isOutput); // goes into BBG file system and writes "in" to the direction.
     }
-    //create new thread to check state of all buttons every SAMPLE_RATE_MS
+    //create new thread to check state of all buttons every BUTTON_SAMPLE_RATE_MS
     pthread_create(&readLoop, NULL, &runSampleLoop, NULL);
 }
 
@@ -75,12 +74,12 @@ static void* runSampleLoop()
         {
             struct button_t *b = &buttons[i];
             b->isPressed = GPIO_getValue(b->gpioPinNum);
-            b->timeHeldMs = b->isPressed ? b->timeHeldMs + SAMPLE_RATE_MS : 0;
+            b->timeHeldMs = b->isPressed ? b->timeHeldMs + BUTTON_SAMPLE_RATE_MS : 0;
 
             //printf("is button[%d] pressed? %d\n", i, b->isPressed);
             //printf("is button[%d] held? %d, time held: %d\n", i, isShortHeld(i), b->timeHeldMs);
         }
-        delayMs(SAMPLE_RATE_MS);
+        delayMs(BUTTON_SAMPLE_RATE_MS);
     }
     cleanupButtons();
     return NULL;
