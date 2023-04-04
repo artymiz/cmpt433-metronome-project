@@ -7,7 +7,7 @@
 #include "Graphics.h"
 #include <stdio.h>
 
-#define MAX_FONT_SIZE 6
+#define MAX_FONT_SIZE 8
 #define RGB_LEN 3
 #define BLACK 0x000000
 #define WHITE 0xffffff
@@ -15,10 +15,19 @@
 static uint32_t _txt_rgb;
 
 
+// =============================
+// Configuration/ Init / Cleanup
+// ============================
+
 void Graphics_init(void)
 {
     Display_init();
     Graphics_setTextColor(BLACK);
+}
+
+void Graphics_cleanup(void)
+{
+    Display_cleanup();
 }
 
 
@@ -27,6 +36,9 @@ void Graphics_setTextColor(uint32_t rgb)
     _txt_rgb = rgb;
 }
 
+// =====================
+// Misc Helper Functions
+// =====================
 
 static void setPixel(uint8_t *buff, uint8_t bit)
 {
@@ -49,6 +61,11 @@ static void setBlock(uint8_t *buff, uint16_t offset, uint8_t bit, uint16_t w, ui
         }
     }
 }
+
+
+// ===========================
+// Displaying Single Character
+// ===========================
 
 
 // write a character at position x0 and y0 from the top right corner of the screen
@@ -110,6 +127,11 @@ void Graphics_writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t
 }
 
 
+// ================
+// Display Strings
+// ================
+
+
 static uint8_t _str_spread = 2;
 
 // sets how far apart the characters are relative to each other.
@@ -146,10 +168,42 @@ void Graphics_writeStr(char *s, uint8_t fontsize, uint16_t x0, uint16_t y0)
 }
 
 
+// ===================
+// Rectangle Drawing
+// ===================
+
+static int _rect_stroke;
+
+static void setFilledRectBuff(uint8_t *buff, uint16_t w, uint16_t h, uint32_t rgb)
+{
+    uint n = w * h * RGB_LEN;
+    for (int i = 0; i < n; i += RGB_LEN) {
+        memcpy(buff + i, (char*)&rgb, RGB_LEN);
+    }
+}
+
+static void setEmptyRectBuff(uint8_t *buff, uint16_t w, uint16_t h, uint32_t rgb)
+{
+}
+
+typedef void (*setBuffFuncPtr_t)(uint8_t*, uint16_t, uint16_t, uint32_t);
+
+static void writeRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
+                      uint32_t rgb, setBuffFuncPtr_t fp)
+{
+    uint n = w * h * RGB_LEN;
+    uint8_t *buff = malloc(n);
+    fp(buff, w, h, rgb);
+    Display_memoryWrite(buff, getDisplayX(y0, h), getDisplayY(x0, w), h, w);
+    free(buff);
+}
+
 // Draw an outline of a rectangle
 void Graphics_drawRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
                        int strokeSize, uint32_t rgb)
 {
+    _rect_stroke = strokeSize;
+    writeRect(x0, y0, w, h, rgb, setEmptyRectBuff);
 }
 
 
@@ -157,20 +211,7 @@ void Graphics_drawRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
 void Graphics_fillRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
         uint32_t rgb)
 {
-    uint n = w * h * RGB_LEN;
-    uint8_t *buff = malloc(n);
-    memset(buff, 0xff, n);
-
-    for (int i = 0; i < n; i += RGB_LEN) {
-        memcpy(buff + i, (char*)&rgb, RGB_LEN);
-    }
-
-    Display_memoryWrite(buff, getDisplayX(y0, h), getDisplayY(x0, w), h, w);
-    free(buff);
+    writeRect(x0, y0, w, h, rgb, setFilledRectBuff);
 }
 
 
-void Graphics_cleanup(void)
-{
-    Display_cleanup();
-}
