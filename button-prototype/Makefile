@@ -6,8 +6,8 @@ OBJDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/obj
 OUTDIR = $(HOME)/cmpt433/work/cmpt433-metronome-project/out
 
 all:
-	$(CC_C) $(CFLAGSLIB) button.c -o $(OBJDIR)/button.o
+	$(CC_C) $(CFLAGSLIB) Button.c -o $(OBJDIR)/Button.o
 	$(CC_C) $(CFLAGSLIB) GPIO.c -o $(OBJDIR)/GPIO.o
-	$(CC_C) $(CFLAGSLIB) button-history.c -o $(OBJDIR)/button-history.o
+	$(CC_C) $(CFLAGSLIB) ButtonHistory.c -o $(OBJDIR)/ButtonHistory.o
 	chmod +x config-pin-script.sh
 	cp config-pin-script.sh $(OUTDIR)

@@ -1,5 +1,5 @@
-#include "button-prototype/button.h"
-#include "button-prototype/button-history.h"
+#include "button-prototype/Button.h"
+#include "button-prototype/ButtonHistory.h"
 #include "ticker-prototype/Ticker.h"
 #include "ticker-prototype/Audio.h"
 #include "ticker-prototype/State.h"
@@ -15,7 +15,7 @@ int main()
 {
     int gpioPins[NUM_BUTTONS];
     gpioPins[BUTTON_PLAY_PAUSE_SHUTDOWN] = ON_OFF_GPIO_PIN;
-    initButtons(gpioPins, NUM_BUTTONS);
+    Button_initButtons(gpioPins, NUM_BUTTONS);
     Audio_init();
     State_load();
     Ticker_init();

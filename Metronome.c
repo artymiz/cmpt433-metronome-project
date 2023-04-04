@@ -1,5 +1,5 @@
-#include "button-prototype/button.h"
-#include "button-prototype/button-history.h"
+#include "button-prototype/Button.h"
+#include "button-prototype/ButtonHistory.h"
 #include "ticker-prototype/Ticker.h"
 #include "ticker-prototype/Audio.h"
 #include "ticker-prototype/State.h"
@@ -51,18 +51,18 @@ int Metronome_playPauseSubroutine()
     //return val is only changed if the play/pause/shutdown/changemode button is pressed/held
     int retVal = METRONOME_NO_CHANGE;
 
-    //because isPressed is true until isShortHeld is true, we need make sure the pause signal is sent only once
-    if (isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN) && getTimeHeld(BUTTON_PLAY_PAUSE_SHUTDOWN) <= BUTTON_SAMPLE_RATE_MS) 
+    //because Button_isPressed is true until Button_isShortHeld is true, we need make sure the pause signal is sent only once
+    if (Button_isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN) && Button_getTimeHeld(BUTTON_PLAY_PAUSE_SHUTDOWN) <= BUTTON_SAMPLE_RATE_MS) 
     {
         isPaused = !isPaused;
         retVal = isPaused;
     }
-    if (isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN))
+    if (Button_isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN))
     {
         printf("Killing program\n");
         retVal = METRONOME_KILL_SIGNAL;
     }
-    else if (isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN))
+    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN))
     {
         printf("Changing metronome mode\n");
         retVal = METRONOME_CHANGE_MODE;
@@ -79,8 +79,8 @@ void Metronome_normalModeSubroutine(void *args)
 
 void Metronome_recordingModeSubroutine(void* args)
 {
-    int bpm = calculateBPM();
-    recordButtonPress(BUTTON_PLAY_PAUSE_SHUTDOWN); // change to recordButtonPress(BUTTON_INCREASE_TEMPO)
+    int bpm = ButtonHistory_calculateBPM();
+    ButtonHistory_recordButtonPress(BUTTON_PLAY_PAUSE_SHUTDOWN); // change to ButtonHistory_recordButtonPress(BUTTON_INCREASE_TEMPO)
     delayMs(20);
     if (bpm != -1) 
     {
@@ -150,8 +150,8 @@ void Metronome_mainRoutine()
 void Metronome_init()
 {
     //set other button timing here, if needed
-    setShortHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, CHANGE_MODE_DELAY);
-    setLongHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, ON_OFF_HOLD_DELAY);
+    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, CHANGE_MODE_DELAY);
+    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, ON_OFF_HOLD_DELAY);
     //theres a bunch of code in main that needs to be moved here
     bpmBeforePause = 0;
 }
@@ -165,18 +165,18 @@ void Metronome_changeTempo()
 {
     int newBpm = State_get(ID_BPM);
     int delta = 0;
-    if (isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_TEMPO)
+    if (Button_isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_TEMPO)
         delta = BPM_CHANGE_PRESS;
-    else if (isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_TEMPO)
+    else if (Button_isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_TEMPO)
         delta = BPM_CHANGE_SHORT_HOLD;
-    else if (isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_TEMPO)
+    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_TEMPO)
         delta = BPM_CHANGE_LONG_HOLD;
 
-    if (isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_TEMPO)
+    if (Button_isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_TEMPO)
         delta = -BPM_CHANGE_PRESS;
-    else if (isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_TEMPO)
+    else if (Button_isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_TEMPO)
         delta = -BPM_CHANGE_SHORT_HOLD;
-    else if (isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_TEMPO)
+    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_TEMPO)
         delta = -BPM_CHANGE_LONG_HOLD;
     
     newBpm += delta;
@@ -192,18 +192,18 @@ void Metronome_changeVolume()
     int newVolume = State_get(ID_VOLUME);
     int delta = 0;
 
-    if (isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_VOLUME)
+    if (Button_isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_VOLUME)
         delta = VOL_CHANGE_PRESS;
-    else if (isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_VOLUME)
+    else if (Button_isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_VOLUME)
         delta = VOL_CHANGE_SHORT_HOLD;
-    else if (isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_VOLUME)
+    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_INCREASE_VOLUME)
         delta = VOL_CHANGE_LONG_HOLD;
 
-    if (isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_VOLUME)
+    if (Button_isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_VOLUME)
         delta = -VOL_CHANGE_PRESS;
-    else if (isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_VOLUME)
+    else if (Button_isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_VOLUME)
         delta = -VOL_CHANGE_SHORT_HOLD;
-    else if (isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_VOLUME)
+    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN)) // change to BUTTON_DECREASE_VOLUME)
         delta = -VOL_CHANGE_LONG_HOLD;
 
     newVolume += delta;
