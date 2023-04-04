@@ -11,5 +11,3 @@ all:
 	$(CC_C) $(CFLAGSLIB) Button_test.c -o $(OBJDIR)/Button_test.o
 	$(CC_C) $(CFLAGSLIB) ButtonHistory.c -o $(OBJDIR)/ButtonHistory.o
 	$(CC_C) $(CFLAGS) ../utility/GPIO.c inspect_button_wiring.c -o $(TARGETDIR)/inspect_button_wiring
-	chmod +x config-pin-script.sh
-	cp config-pin-script.sh $(OUTDIR)

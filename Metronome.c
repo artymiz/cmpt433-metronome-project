@@ -62,7 +62,6 @@ static void Metronome_checkPlayPauseButton()
 
 static void Metronome_changeTempo()
 {
-
     int newBpm = State_get(ID_BPM);
     int delta = 0;
     if (Button_isLongHeld(BUTTON_INC_BPM))
