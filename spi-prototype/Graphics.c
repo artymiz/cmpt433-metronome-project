@@ -5,7 +5,6 @@
 #include "Display.h"
 #include "font5x7.h"
 #include "Graphics.h"
-#include <stdio.h>
 
 #define MAX_FONT_SIZE 8
 #define RGB_LEN 3
@@ -36,6 +35,7 @@ void Graphics_setTextColor(uint32_t rgb)
     _txt_rgb = rgb;
 }
 
+
 // =====================
 // Misc Helper Functions
 // =====================
@@ -56,7 +56,6 @@ static void setBlock(uint8_t *buff, uint16_t offset, uint8_t bit, uint16_t w, ui
     const uint n = blocksize * RGB_LEN;
     for (int i = 0; i < n; i+=RGB_LEN) {
         for (int j = 0; j < n; j+=RGB_LEN) {
-            // if (bit == 1) printf("\t%d\n", diff);
             setPixel(buff + offset + (i * w + j), bit);
         }
     }
@@ -66,7 +65,6 @@ static void setBlock(uint8_t *buff, uint16_t offset, uint8_t bit, uint16_t w, ui
 // ===========================
 // Displaying Single Character
 // ===========================
-
 
 // write a character at position x0 and y0 from the top right corner of the screen
 static void writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t y0,
@@ -86,7 +84,6 @@ static void writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t y
             unsigned char shift = FONT5X7_HEIGHT - col - 1;
             unsigned char bit = (cRowVal & (1 << shift)) >> shift;
             uint16_t cornerIdx = RGB_LEN * fontsize * (h * row + col);
-            // if (bit == 1) printf("CornerIdx: %u\n", cornerIdx);
             setBlock(buff, cornerIdx, bit, h, fontsize);
         }
     }
