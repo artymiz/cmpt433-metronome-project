@@ -100,9 +100,11 @@ static void* runSampleLoop()
     return NULL;
 }
 
+int Button_isPressed(enum buttons button) { return buttons[button].isPressed; }
+int Button_isShortHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].shortHoldDelayMs; }
+int Button_isLongHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].longHoldDelayMs; }
 
-
-int Button_isPressed(enum buttons button) 
+int Button_justPressed(enum buttons button) 
 {
     struct button_t* b = &buttons[button];
     int retVal = b->isPressed && b->pressHandled == 0;
@@ -114,7 +116,7 @@ int Button_isPressed(enum buttons button)
     return retVal;
 }
 
-int Button_isShortHeld(enum buttons button) 
+int Button_justShortHeld(enum buttons button) 
 {
     struct button_t* b = &buttons[button];
     int retVal = (b->timeHeldMs >= b->shortHoldDelayMs) && b->shortHoldHandled == 0;
@@ -126,7 +128,7 @@ int Button_isShortHeld(enum buttons button)
     return retVal;
 }
 
-int Button_isLongHeld(enum buttons button) 
+int Button_justLongHeld(enum buttons button) 
 { 
     struct button_t* b = &buttons[button];
     int retVal = (b->timeHeldMs >= b->longHoldDelayMs) && b->longHoldHandled == 0;

@@ -9,14 +9,20 @@ enum buttons {
     //BUTTON_DECREASE_VOLUME,
     NUM_BUTTONS
 };
-//returns true when a button is first pressed, then returns false until the button is released
+//returns true until a button is released
 int Button_isPressed(enum buttons button);
+//returns true when a button is first pressed, then returns false until the button is released
+int Button_justPressed(enum buttons button);
 
-//returns true when a button is first held for its shortDelayMs, then returns false until the button is released
+//returns true until the button is released
 int Button_isShortHeld(enum buttons button);
+//returns true when a button is first held for its shortDelayMs, then returns false until the button is released
+int Button_justShortHeld(enum buttons button);
 
-//returns true when a button is first held for its longDelayMs, then returns false until the button is released
+//returns true until the button is released
 int Button_isLongHeld(enum buttons button);
+//returns true when a button is first held for its longDelayMs, then returns false until the button is released
+int Button_justLongHeld(enum buttons button);
 
 //Initialize multiple buttons that are read when the voltage on a pin sampled is HIGH 
 //
