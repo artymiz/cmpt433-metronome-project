@@ -31,30 +31,27 @@ static void strTest(void)
 
 static void filledRectTest(__useconds_t usecs, uint32_t rgb)
 {
-    // usleep(usecs);
-    // uint16_t w = 50;
-    // uint16_t h = 100;
-    // uint16_t padding = 10;
-    // uint16_t x_end = ROW_MAX - w - padding;
-    // for (int x = padding; x < x_end; x += (w + padding)) {
-    //     Graphics_fillRect(x, padding, w, h, rgb);
-    //     usleep(usecs);
-    //     // redraw with white
-    //     Graphics_fillRect(x, padding, w, h, 0xffffff);
-    // }
-    Graphics_fillRect(0, 0, 30, 40, rgb);
-    Graphics_fillRect(40, 0, 40, 50, rgb);
-
+     usleep(usecs);
+     uint16_t w = 50;
+     uint16_t h = 100;
+     uint16_t padding = 10;
+     uint16_t x_end = ROW_MAX - w - padding;
+     for (int x = padding; x < x_end; x += (w + padding)) {
+         Graphics_fillRect(x, padding, w, h, rgb);
+         usleep(usecs);
+         // redraw with white
+         Graphics_fillRect(x, padding, w, h, 0xffffff);
+     }
 }
 
 int main(int argc, char *argv[])
 {
     Graphics_init();
-    Graphics_setTextColor(0xff0000);
-    characterTest();
+    // Graphics_setTextColor(0xff0000);
+    // characterTest();
     // strTest();
-    // uint32_t color = 0xff0000;
-    // filledRectTest(500000, color);
-    // Graphics_cleanup();
+    uint32_t color = 0xff0000;
+    filledRectTest(500000, color);
+    Graphics_cleanup();
     return 0;
 }

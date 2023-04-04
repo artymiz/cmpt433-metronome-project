@@ -4,7 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
-void displaySqrTest(int x0, int y0, int w, int h)
+void displayRectTest(int x0, int y0, int w, int h)
 {
     int n = w * h * 3;
     uint8_t *buff = malloc(n);
@@ -29,7 +29,8 @@ int main(int argc, char const *argv[])
     //     Display_memoryWrite(buf, i, i, edge, edge);
     //     sleep(1);
     // }
-    displaySqrTest(30, 30, 50, 50);
+    displayRectTest(0, 0, 50, 50);
+    displayRectTest(0, 80, 80, 100);
     Display_cleanup();
     return 0;
 }

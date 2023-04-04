@@ -229,24 +229,61 @@ void Display_init()
     Display_memoryWrite(whiteBuf, 0, 0, COL_MAX, ROW_MAX);
 }
 
+// copy the array from src to dst, returning the next byte not copied
+static uint8_t *copy(uint8_t *first, uint8_t *last, uint8_t *result)
+{
+    while (first != last) {
+        *result = *first;
+        ++result;
+        ++first;
+    }
+    return result;
+}
+
+// copy n elements from src to dst
+// offset
+static size_t copy_n(uint8_t *dst, uint8_t *src,
+        size_t *srcOffset, size_t srcLen, size_t n)
+{
+    size_t src_i = *srcOffset;
+    size_t dst_i = 0;
+
+    for (; src_i < srcLen && dst_i < n; dst_i++, src_i++) {
+        dst[dst_i] = src[src_i];
+    }
+    *srcOffset = src_i;
+
+    return dst_i;
+}
+
 void Display_memoryWrite(uint8_t *buff, uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
 {
     setWriteArea(x0, y0, w, h);
 
     sendCommand(MEMORY_WRITE, NULL);
 
-    const size_t bytesToWrite = w * h * 3;
-    uint8_t writeBuf[SPI_MAX_LEN];
-    size_t copy_i = 0;
-    while (copy_i < bytesToWrite) {
-        size_t bytesToCopy = bytesToWrite < SPI_MAX_LEN ? bytesToWrite : SPI_MAX_LEN;
-        memcpy(writeBuf, buff, bytesToCopy);
+    // const size_t bytesToWrite = w * h * 3;
+    // uint8_t *writeBuf[SPI_MAX_LEN];
+    // size_t copy_i = 0;
+    // while (copy_i < bytesToWrite) {
+    //     size_t bytesToCopy = bytesToWrite < SPI_MAX_LEN ? bytesToWrite : SPI_MAX_LEN;
+    //     memcpy(writeBuf, buff, bytesToCopy);
 
+    //     CS_LOW
+    //     spiTransfer(writeBuf, NULL, bytesToCopy);
+    //     CS_HIGH
+
+    //     copy_i += bytesToCopy;
+    // }
+
+    const size_t buffSize = w * h * 3;
+    size_t buffIdx = 0;
+    uint8_t wrtBuf[SPI_MAX_LEN];
+    size_t wrtBytes;
+    while ((wrtBytes = copy_n(wrtBuf, buff, &buffIdx, buffSize, SPI_MAX_LEN))) {
         CS_LOW
-        spiTransfer(writeBuf, NULL, bytesToCopy);
+        spiTransfer(wrtBuf, NULL, wrtBytes);
         CS_HIGH
-
-        copy_i += bytesToCopy;
     }
 
     sendCommand(NOP, NULL);
