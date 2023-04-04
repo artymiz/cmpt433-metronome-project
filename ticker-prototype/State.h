@@ -4,7 +4,7 @@
 typedef enum stateid {
     ID_BPM,
     ID_VOLUME,
-    ID_BEATSPERBAR,
+    ID_TIMESIG,
     ID_MODE,
     ID_ISPAUSED,
     STATECOUNT
