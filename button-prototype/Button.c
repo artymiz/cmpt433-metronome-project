@@ -101,8 +101,8 @@ static void* runSampleLoop()
 }
 
 int Button_isPressed(enum buttons button) { return buttons[button].isPressed; }
-int Button_isShortHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].shortHoldDelayMs; }
-int Button_isLongHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].longHoldDelayMs; }
+int Button_isShortHeld(enum buttons button) { return buttons[button].timeHeldMs >= buttons[button].shortHoldDelayMs && !Button_isLongHeld(button); }
+int Button_isLongHeld(enum buttons button) { return buttons[button].timeHeldMs >= buttons[button].longHoldDelayMs; }
 
 int Button_justPressed(enum buttons button) 
 {
