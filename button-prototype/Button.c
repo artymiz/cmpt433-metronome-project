@@ -48,6 +48,7 @@ void Button_initButtons(int* gpioPinNumbers, int numButtons)
     {
         buttons[i].gpioPinNum   = gpioPinNumbers[i];
         buttons[i].shortHoldDelayMs    = DEFAULT_SHORT_HOLD_DELAY_MS;
+        buttons[i].longHoldDelayMs     = DEFAULT_LONG_HOLD_DELAY_MS;
         buttons[i].timeHeldMs          = 0;
         buttons[i].isPressed           = 0;
         buttons[i].pressHandled        = 0;

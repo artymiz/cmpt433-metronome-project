@@ -12,19 +12,17 @@ const formidable = require('formidable')
 
 // Function used for naming the next upload file
 // based on the names of the files in uploads.  
-// Valid upload file names are 1.wav ... n.wav.
+// Valid upload file names are 0.wav ... 9.wav.
 function getUploadName() {
-    const maxUploads = 5 // Max number of files in uploads
-    let uploadNumber = 1; // If no other options, overwrite first (oldest) sample.
+    const maxUploads = 10 // Max number of files in uploads.
     const filenames = fs.readdirSync('uploads')
     filenameNumbers = filenames.map(elem => Number(elem[0])) // 'x.wav' => x
-    for (let n = 1; n <= maxUploads; n++) {
+    for (let n = 0; n < maxUploads; n++) {
         if (!filenameNumbers.includes(n)) {
-            uploadNumber = n;
-            break
+            return `${n}.wav`
         }
     }
-    return uploadNumber + '.wav'
+    return '0.wav' // If no other options, overwrite first (oldest) sample.
 }
 
 const server = http.createServer(function (request, response) {

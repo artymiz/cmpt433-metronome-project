@@ -9,3 +9,4 @@ all:
 	$(CC_C) $(CFLAGSLIB) GPIO.c -o $(OBJDIR)/GPIO.o
 	$(CC_C) $(CFLAGSLIB) KillSignal.c -o $(OBJDIR)/KillSignal.o
 	$(CC_C) $(CFLAGSLIB) Timing.c -o $(OBJDIR)/Timing.o
+	cp config-pin-script.sh $(OUTDIR)/config-pin-script.sh

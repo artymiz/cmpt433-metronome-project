@@ -9,13 +9,12 @@
 #include <pthread.h>
 #include <stdbool.h>
 
-#define ON_OFF_GPIO_PIN 66
 #define CHANGE_MODE_DELAY 1000
 #define ON_OFF_HOLD_DELAY 3000
 
-//every time a button checking thread loops, it waits 20ms
+// every time a button checking thread loops, it waits 20ms
 #define DELAY_SHORT 20
-//short delay always occurs, so total wait time is DELAY_LONG + DELAY_SHORT
+// short delay always occurs, so total wait time is DELAY_LONG + DELAY_SHORT
 #define PLAY_PAUSE_DELAY_LONG 480
 
 #define CHANGE_VOL_DELAY_SHORT 1000
@@ -36,33 +35,32 @@
 
 #define NS_PER_MS 1000000LL
 
-static long long timeVolumeLastChanged;
-static long long timeTempoLastChanged;
-static int volDeltas[3]     = { VOL_CHANGE_PRESS,       VOL_CHANGE_SHORT_HOLD,      VOL_CHANGE_LONG_HOLD };
-static int BPMDeltas[3]     = { BPM_CHANGE_PRESS,       BPM_CHANGE_SHORT_HOLD,      BPM_CHANGE_LONG_HOLD };
-static int timeSigDeltas[3] = { TIMESIG_CHANGE_PRESS,   TIMESIG_CHANGE_SHORT_HOLD,  TIMESIG_CHANGE_LONG_HOLD };
+//example usage of configCommand: I want to check if the user pressed the VOL_UP_BUTTON, but I am in recording mode.
+//command.button = BUTTON_INC_VOL; 
+//command.direction = 1; 
+//Metronome_changeStateSetting(command);
 
-//alters MODE and ISPAUSED state switches if user presses the PLAY_PAUSE_SHUTDOWN button
-//does nothing if user did not press the big red button
-static void Metronome_handleModeButton();
-static void Metronome_runNormalMode();
-static void Metronome_runRecordingMode();
-
-static void Metronome_handleModeButton()
+static struct configCommand volCommand;
+static struct configCommand bpmCommand;
+static struct configCommand timeSigCommand;
+/**
+ * Check button states of the BUTTON_PLAY_PAUSE (red button) to determine whether to
+ * play/pause, mode switch, or shutdown.
+ */
+static void Metronome_checkPlayPauseButton()
 {
-    int modeButton = BUTTON_PLAY_PAUSE_SHUTDOWN;
-    if (Button_isPressed(modeButton))
+    int modeButton = BUTTON_PLAY_PAUSE;
+    if (Button_justPressed(modeButton)) // toggle play/pause
     {
         printf("pressed\n");
         State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
     }
-    if (Button_isLongHeld(modeButton))
+    if (Button_justLongHeld(modeButton)) // shutdown
     {
         printf("Killing program\n");
         KillSignal_shutdown();
-
     }
-    else if (Button_isShortHeld(modeButton))
+    else if (Button_justShortHeld(modeButton)) // toggle alt/normal
     {
         printf("Changing metronome mode\n");
         State_set(ID_MODE, !State_get(ID_MODE));
@@ -71,8 +69,6 @@ static void Metronome_handleModeButton()
 
 static void Metronome_runNormalMode()
 {
-    Metronome_changeTempo();
-    Metronome_changeVolume();
     //printf("normal mode\n");
     delayMs(DELAY_SHORT);
 }
@@ -138,43 +134,67 @@ void Metronome_mainThread()
     }
 }
 
+void Metronome_changeStateSetting(struct configCommand* command)
+{
+    int newSettingValue = State_get(command->stateId);
+    enum buttons b = command->button;
+    int delta = 0;
+    if (Button_isLongHeld(b))
+        delta = command->deltas[2] * command->direction;
+    else if (Button_isShortHeld(b))
+        delta = command->deltas[1] * command->direction;
+    else if (Button_isPressed(b))
+        delta = command->deltas[0] * command->direction;
+    newSettingValue += delta;
+
+    if (newSettingValue != State_get(command->stateId))
+    {
+        long long curTime = getTimeInNanoS();
+        if ((curTime - command->lastChangeTimestamp) >= (WAIT_BEFORE_NEXT_EVENT_MS * NS_PER_MS))
+        {
+            command->lastChangeTimestamp = curTime;
+            State_set(command->stateId, newSettingValue);
+        }
+    }
+}
+
 void Metronome_init()
 {
-    //set other button timing here, if needed
-    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, CHANGE_MODE_DELAY);
-    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, ON_OFF_HOLD_DELAY);
-    Metronome_handleModeButton();
+    // set other button timing here, if needed
+    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, CHANGE_MODE_DELAY);
+    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, ON_OFF_HOLD_DELAY);
+
+    timeSigCommand.lastChangeTimestamp = 0;
+    timeSigCommand.button = BUTTON_INC_VOL;
+    timeSigCommand.stateId = ID_TIMESIG;
+    timeSigCommand.deltas[0] = TIMESIG_CHANGE_PRESS;
+    timeSigCommand.deltas[1] = TIMESIG_CHANGE_SHORT_HOLD;
+    timeSigCommand.deltas[2] = TIMESIG_CHANGE_LONG_HOLD;
+    timeSigCommand.direction = 1;
+
+    volCommand.lastChangeTimestamp = 0;
+    volCommand.button = BUTTON_INC_VOL;
+    volCommand.stateId = ID_VOLUME;
+    volCommand.deltas[0] = VOL_CHANGE_PRESS;
+    volCommand.deltas[1] = VOL_CHANGE_SHORT_HOLD;
+    volCommand.deltas[2] = VOL_CHANGE_LONG_HOLD;
+    volCommand.direction = 1;
+
+    bpmCommand.lastChangeTimestamp = 0;
+    bpmCommand.button = BUTTON_INC_BPM;
+    bpmCommand.stateId = ID_BPM;
+    bpmCommand.deltas[0] = BPM_CHANGE_PRESS;
+    bpmCommand.deltas[1] = BPM_CHANGE_SHORT_HOLD;
+    bpmCommand.deltas[2] = BPM_CHANGE_LONG_HOLD;
+    bpmCommand.direction = 1;
+
+    Metronome_checkPlayPauseButton();
 }
 
 void Metronome_cleanup()
 {
-    //set button delays to invalid state
-    //set other button timing here, if needed
-    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, -1);
-    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, -1);
-}
-//button, [deltas], ID_{state element to change}
-void Metronome_changeVolumeBpmOrTimeSignature(enum buttons button, int deltas[3], enum stateid stateId)
-{
-
-    int newSetting = State_get(stateId);
-    int multiplier = newSetting == BUTTON_PLAY_PAUSE_SHUTDOWN;
-    int delta = 0;
-    if (Button_isLongHeld(button)) // change to BUTTON_INCREASE_VOLUME)
-        delta = deltas[2];
-    else if (Button_isShortHeld(button)) // change to BUTTON_INCREASE_VOLUME)
-        delta = deltas[1];
-    else if (Button_isPressed(button)) // change to BUTTON_INCREASE_VOLUME)
-        delta = deltas[0];
-    newSetting += delta;
-    if (newSetting != State_get(ID_VOLUME)) 
-    {
-        long long curTime = getTimeInNanoS();
-        if ((curTime - timeVolumeLastChanged) >= (WAIT_BEFORE_NEXT_EVENT_MS * NS_PER_MS))
-        {
-            timeVolumeLastChanged = curTime;
-            State_set(ID_VOLUME, newSetting);
-            printf("Volume changed to %d\n", State_get(ID_VOLUME));
-        }
-    }
+    // set button delays to invalid state
+    // set other button timing here, if needed
+    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, -1);
+    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, -1);
 }
