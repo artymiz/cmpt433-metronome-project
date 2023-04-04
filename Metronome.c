@@ -111,6 +111,13 @@ void Metronome_mainRoutine()
                 State_set(ID_ISPAUSED, 1);
                 break;
             case METRONOME_PLAY :
+                //BPM was changed from outside of this thread, so we throw out bpmBeforePause
+                //and assume that the state file was changed by the other thread
+                if (State_get(ID_BPM) != 0)
+                {
+                    bpmBeforePause = 0;
+                    break;
+                }
                 State_set(ID_BPM, bpmBeforePause);
                 printf("Resuming, bpm is set to: %d\n", State_get(ID_BPM));
                 State_set(ID_ISPAUSED, 0);

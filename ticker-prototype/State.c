@@ -7,18 +7,18 @@
 #include "State.h"
 
 static int state[STATECOUNT]; // bpm, volume, beatsPerBar, mode (normal/recording), isPaused
-// exclusive boundaries for state values
-static float stateMins[] = {0,  //BPM
-                            -1, //volume
-                            0,  //beats per bar
-                            -1, //mode
-                            -1  //is paused
+// inclusive boundaries for state values
+static float stateMins[] = {1, //BPM
+                            0, //volume
+                            1, //beats per bar
+                            0, //mode
+                            0  //is paused
                            };
-static float stateMaxs[] = {INFINITY, //BPM
-                            101,      //volume
-                            INFINITY, //beats per bar
-                            2,        //mode
-                            2         //is paused
+static float stateMaxs[] = {350, //BPM
+                            100, //volume
+                            100, //beats per bar
+                            1,   //mode
+                            1    //is paused
                             };
 
 // File to array
@@ -66,8 +66,15 @@ int State_get(stateid_t id)
 
 void State_set(stateid_t id, int val)
 {
-    float valFloat = val;
-    if (valFloat > stateMins[id] && valFloat < stateMaxs[id])
+    if (val < stateMins[id])
+    {
+        state[id] = stateMins[id];
+    }
+    else if (val > stateMaxs[id])
+    {
+        state[id] = stateMaxs[id];
+    }
+    else 
     {
         state[id] = val;
     }

@@ -21,7 +21,7 @@ static void *tickerRoutine(void *args)
         int bpm = State_get(ID_BPM);
 	if (bpm == 0) 
 	{
-	    fprintf("BPM cannot be zero\n");
+	    printf("BPM cannot be zero\n");
 	    exit(1);
 	}
 	bool isPaused = State_get(ID_ISPAUSED);
