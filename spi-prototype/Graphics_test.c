@@ -52,6 +52,8 @@ int main(int argc, char *argv[])
     // strTest();
     uint32_t color = 0xff0000;
     filledRectTest(500000, color);
+    Graphics_drawRect(10, 10, 40, 80, 4, color);
+    Graphics_drawRect(50, 10, 40, 80, 4, color);
     Graphics_cleanup();
     return 0;
 }

@@ -179,9 +179,21 @@ static void setFilledRectBuff(uint8_t *buff, uint16_t w, uint16_t h, uint32_t rg
     }
 }
 
+
 static void setEmptyRectBuff(uint8_t *buff, uint16_t w, uint16_t h, uint32_t rgb)
 {
+    for (int i = 0; i < w; i++) {
+        for (int j = 0; j < h; j++) {
+            // set color to rgb at the border, and white in the middle
+            uint32_t color =
+                ( (i < _rect_stroke || i >= (w - _rect_stroke)) ||
+                  (j < _rect_stroke || j >= (h - _rect_stroke)) )
+                ? rgb : WHITE;
+            memcpy(buff + (i * h + j) * RGB_LEN, (char*)&color, RGB_LEN);
+        }
+    }
 }
+
 
 typedef void (*setBuffFuncPtr_t)(uint8_t*, uint16_t, uint16_t, uint32_t);
 
@@ -194,6 +206,7 @@ static void writeRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
     Display_memoryWrite(buff, getDisplayX(y0, h), getDisplayY(x0, w), h, w);
     free(buff);
 }
+
 
 // Draw an outline of a rectangle
 void Graphics_drawRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
