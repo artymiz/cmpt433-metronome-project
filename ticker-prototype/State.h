@@ -1,0 +1,19 @@
+// State is described with integers State.txt
+
+
+typedef enum stateid {
+    ID_BPM,
+    ID_VOLUME,
+    ID_BEATSPERBAR,
+    ID_MODE,
+    ID_ISPAUSED,
+    STATECOUNT
+} stateid_t;
+
+//load metronome state from a file
+void State_load(void);
+//save state to file
+void State_store(void);
+int State_get(stateid_t id);
+//val passed is clamped to a min and max
+void State_set(stateid_t id, int val);

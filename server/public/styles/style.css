@@ -1,0 +1,42 @@
+body {
+	width: 800px;
+	margin-left: auto;
+	margin-right: auto;
+}
+h1, h2 {
+	margin-bottom: 1px;
+	padding-bottom: 1px;
+}
+
+#content {
+	margin-top: 10pt;
+}
+
+#status-box {
+	float: right;
+	width: 250px;
+	min-height: 200pt;
+	border: thin black solid;
+	background-color: #f3f3f3;
+	padding-left: 10pt;
+	padding-right: 10pt;
+}
+
+#left-box {
+	margin-right: 300px;	
+	border: thin black solid;
+	padding-left: 10pt;
+	padding-right: 10pt;
+	min-height: 200pt;
+}
+
+#error-box {
+	border: thin black solid;
+	clear: both;
+	background-color: red;
+	padding-left: 10pt;
+	padding-right: 10pt;
+	min-height: 100pt;
+	margin-top: 20px;
+	display: none;
+}
