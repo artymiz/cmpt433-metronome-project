@@ -43,17 +43,17 @@ static long long timeTempoLastChanged;
 static void Metronome_checkPlayPauseButton()
 {
     int modeButton = BUTTON_PLAY_PAUSE;
-    if (Button_isPressed(modeButton)) // toggle play/pause
+    if (Button_justPressed(modeButton)) // toggle play/pause
     {
         printf("pressed\n");
         State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
     }
-    if (Button_isLongHeld(modeButton)) // shutdown
+    if (Button_justLongHeld(modeButton)) // shutdown
     {
         printf("Killing program\n");
         KillSignal_shutdown();
     }
-    else if (Button_isShortHeld(modeButton)) // toggle alt/normal
+    else if (Button_justShortHeld(modeButton)) // toggle alt/normal
     {
         printf("Changing metronome mode\n");
         State_set(ID_MODE, !State_get(ID_MODE));
@@ -151,7 +151,6 @@ void Metronome_init()
     // set other button timing here, if needed
     Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, CHANGE_MODE_DELAY);
     Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, ON_OFF_HOLD_DELAY);
-    // Metronome_checkPlayPauseButton(); // don't see why this is necessary
 }
 
 void Metronome_cleanup()
@@ -205,6 +204,5 @@ void Metronome_mainThread()
                 // change state in whatever way needed (send bpm/other ui elements to screen, etc)
             }
         }
-        // delayMs(20);
     }
 }
