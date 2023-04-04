@@ -8,9 +8,9 @@ void Metronome_init();
 void Metronome_cleanup();
 //changes tempo IFF a button was pressed or held
 //the hold duration increases how much tempo is changed by
-void Metronome_changeTempo();
+// void Metronome_changeTempo();
 //changes tempo IFF a button was pressed or held
 //the hold duration increases how much volume is changed by
-void Metronome_changeVolume();
+// void Metronome_changeVolume();
 
 #endif

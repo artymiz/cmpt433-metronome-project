@@ -12,9 +12,9 @@
 #define CHANGE_MODE_DELAY 1000
 #define ON_OFF_HOLD_DELAY 3000
 
-//every time a button checking thread loops, it waits 20ms
+// every time a button checking thread loops, it waits 20ms
 #define DELAY_SHORT 20
-//short delay always occurs, so total wait time is DELAY_LONG + DELAY_SHORT
+// short delay always occurs, so total wait time is DELAY_LONG + DELAY_SHORT
 #define PLAY_PAUSE_DELAY_LONG 480
 
 #define CHANGE_VOL_DELAY_SHORT 1000
@@ -36,139 +36,51 @@
 static long long timeVolumeLastChanged;
 static long long timeTempoLastChanged;
 
-//alters MODE and ISPAUSED state switches if user presses the PLAY_PAUSE_SHUTDOWN button
-//does nothing if user did not press the big red button
-static void Metronome_handleModeButton();
-static void Metronome_runNormalMode();
-static void Metronome_runRecordingMode();
-
-static void Metronome_handleModeButton()
+/**
+ * Check button states of the BUTTON_PLAY_PAUSE (red button) to determine whether to
+ * play/pause, mode switch, or shutdown.
+ */
+static void Metronome_checkPlayPauseButton()
 {
     int modeButton = BUTTON_PLAY_PAUSE;
-    if (Button_isPressed(modeButton))
+    if (Button_isPressed(modeButton)) // toggle play/pause
     {
         printf("pressed\n");
         State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
     }
-    if (Button_isLongHeld(modeButton))
+    if (Button_isLongHeld(modeButton)) // shutdown
     {
         printf("Killing program\n");
         KillSignal_shutdown();
-
     }
-    else if (Button_isShortHeld(modeButton))
+    else if (Button_isShortHeld(modeButton)) // toggle alt/normal
     {
         printf("Changing metronome mode\n");
         State_set(ID_MODE, !State_get(ID_MODE));
     }
 }
 
-static void Metronome_runNormalMode()
-{
-    Metronome_changeTempo();
-    Metronome_changeVolume();
-    //printf("normal mode\n");
-    delayMs(DELAY_SHORT);
-}
-
-static void Metronome_runRecordingMode()
-{
-    //int bpm = ButtonHistory_calculateBPM();
-    //ButtonHistory_recordButtonPress(BUTTON_PLAY_PAUSE_SHUTDOWN); // change to ButtonHistory_recordButtonPress(BUTTON_INC_BPM)
-    //delayMs(20);
-    //if (bpm != -1) 
-    //{
-    //    printf("bpm after record: %d\n", bpm);
-        //break;
-    //}
-    printf("recording mode\n");
-    delayMs(DELAY_SHORT);
-}
-
-void Metronome_mainThread()
-{
-    while (KillSignal_getIsRunning())
-    {
-        //Metronome_handleModeButton();
-
-        if (!KillSignal_getIsRunning())
-            break;
-
-        if (State_get(ID_MODE))
-        { //MODE = NORMAL
-            if (State_get(ID_ISPAUSED))
-            {
-                //change state in whatever way needed (like send "PAUSED" message to screen)
-                //State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
-                //printf("normal mode paused\n");
-                delayMs(100);
-                continue;
-            }
-            else 
-            {
-                //change state in whatever way needed (send bpm/other ui elements to screen, etc)
-                //State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
-                Metronome_runNormalMode();
-            }
-        }
-        else 
-        { //MODE = RECORDING
-            if (State_get(ID_ISPAUSED))
-            {
-                //change state in whatever way needed (like send "PAUSED" message to screen)
-                //State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
-                //printf("recording mode paused\n");
-                delayMs(100);
-                continue;
-            }
-            else 
-            {
-                //State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
-                Metronome_runRecordingMode();
-                //change state in whatever way needed (send bpm/other ui elements to screen, etc)
-            }
-        }
-        //delayMs(20);
-    }
-}
-
-void Metronome_init()
-{
-    //set other button timing here, if needed
-    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, CHANGE_MODE_DELAY);
-    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, ON_OFF_HOLD_DELAY);
-    Metronome_handleModeButton();
-}
-
-void Metronome_cleanup()
-{
-    //set button delays to invalid state
-    //set other button timing here, if needed
-    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, -1);
-    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, -1);
-}
-
-void Metronome_changeTempo()
+static void Metronome_changeTempo()
 {
 
     int newBpm = State_get(ID_BPM);
     int delta = 0;
-    if (Button_isLongHeld(BUTTON_PLAY_PAUSE)) // change to BUTTON_INC_BPM)
+    if (Button_isLongHeld(BUTTON_INC_BPM))
         delta = BPM_CHANGE_LONG_HOLD;
-    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE)) // change to BUTTON_INC_BPM)
+    else if (Button_isShortHeld(BUTTON_INC_BPM))
         delta = BPM_CHANGE_SHORT_HOLD;
-    else if (Button_isPressed(BUTTON_PLAY_PAUSE)) // change to BUTTON_INC_BPM)
+    else if (Button_isPressed(BUTTON_INC_BPM))
         delta = BPM_CHANGE_PRESS;
-    
-    if (Button_isLongHeld(BUTTON_PLAY_PAUSE)) // change to BUTTON_DEC_BPM)
+
+    if (Button_isLongHeld(BUTTON_DEC_BPM))
         delta = -BPM_CHANGE_LONG_HOLD;
-    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE)) // change to BUTTON_DEC_BPM)
+    else if (Button_isShortHeld(BUTTON_DEC_BPM))
         delta = -BPM_CHANGE_SHORT_HOLD;
-    else if (Button_isPressed(BUTTON_PLAY_PAUSE)) // change to BUTTON_DEC_BPM)
+    else if (Button_isPressed(BUTTON_DEC_BPM))
         delta = -BPM_CHANGE_PRESS;
-    
+
     newBpm += delta;
-    if (newBpm != State_get(ID_BPM)) 
+    if (newBpm != State_get(ID_BPM))
     {
         long long curTime = getTimeInNanoS();
         if ((curTime - timeTempoLastChanged) >= (TEMPO_WAIT_BEFORE_CHANGE * NS_PER_MS))
@@ -180,27 +92,27 @@ void Metronome_changeTempo()
     }
 }
 
-void Metronome_changeVolume()
+static void Metronome_changeVolume()
 {
     int newVolume = State_get(ID_VOLUME);
     int delta = 0;
 
-    if (Button_isLongHeld(BUTTON_PLAY_PAUSE)) // change to BUTTON_INC_VOL)
+    if (Button_isLongHeld(BUTTON_INC_VOL))
         delta = VOL_CHANGE_LONG_HOLD;
-    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE)) // change to BUTTON_INC_VOL)
+    else if (Button_isShortHeld(BUTTON_INC_VOL))
         delta = VOL_CHANGE_SHORT_HOLD;
-    else if (Button_isPressed(BUTTON_PLAY_PAUSE)) // change to BUTTON_INC_VOL)
+    else if (Button_isPressed(BUTTON_INC_VOL))
         delta = VOL_CHANGE_PRESS;
 
-    if (Button_isLongHeld(BUTTON_PLAY_PAUSE)) // change to BUTTON_DEC_VOL)
+    if (Button_isLongHeld(BUTTON_DEC_VOL))
         delta = -VOL_CHANGE_LONG_HOLD;
-    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE)) // change to BUTTON_DEC_VOL)
+    else if (Button_isShortHeld(BUTTON_DEC_VOL))
         delta = -VOL_CHANGE_SHORT_HOLD;
-    else if (Button_isPressed(BUTTON_PLAY_PAUSE)) // change to BUTTON_DEC_VOL)
+    else if (Button_isPressed(BUTTON_DEC_VOL))
         delta = -VOL_CHANGE_PRESS;
 
     newVolume += delta;
-    if (newVolume != State_get(ID_VOLUME)) 
+    if (newVolume != State_get(ID_VOLUME))
     {
         long long curTime = getTimeInNanoS();
         if ((curTime - timeVolumeLastChanged) >= (VOLUME_WAIT_BEFORE_CHANGE * NS_PER_MS))
@@ -209,5 +121,90 @@ void Metronome_changeVolume()
             State_set(ID_VOLUME, newVolume);
             printf("Volume changed to %d\n", State_get(ID_VOLUME));
         }
+    }
+}
+
+static void Metronome_runNormalMode()
+{
+    Metronome_changeTempo();
+    Metronome_changeVolume();
+    // printf("normal mode\n");
+    delayMs(DELAY_SHORT);
+}
+
+static void Metronome_runRecordingMode()
+{
+    // int bpm = ButtonHistory_calculateBPM();
+    // ButtonHistory_recordButtonPress(BUTTON_PLAY_PAUSE_SHUTDOWN); // change to ButtonHistory_recordButtonPress(BUTTON_INC_BPM)
+    // delayMs(20);
+    // if (bpm != -1)
+    //{
+    //     printf("bpm after record: %d\n", bpm);
+    // break;
+    //}
+    printf("recording mode\n");
+    delayMs(DELAY_SHORT);
+}
+
+void Metronome_init()
+{
+    // set other button timing here, if needed
+    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, CHANGE_MODE_DELAY);
+    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, ON_OFF_HOLD_DELAY);
+    // Metronome_checkPlayPauseButton(); // don't see why this is necessary
+}
+
+void Metronome_cleanup()
+{
+    // set button delays to invalid state
+    // set other button timing here, if needed
+    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, -1);
+    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, -1);
+}
+
+void Metronome_mainThread()
+{
+    while (KillSignal_getIsRunning())
+    {
+        Metronome_checkPlayPauseButton();
+
+        if (!KillSignal_getIsRunning())
+            break;
+
+        if (State_get(ID_MODE))
+        { // MODE = NORMAL
+            if (State_get(ID_ISPAUSED))
+            {
+                // change state in whatever way needed (like send "PAUSED" message to screen)
+                // State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
+                // printf("normal mode paused\n");
+                delayMs(100);
+                continue;
+            }
+            else
+            {
+                // change state in whatever way needed (send bpm/other ui elements to screen, etc)
+                // State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
+                Metronome_runNormalMode();
+            }
+        }
+        else
+        { // MODE = RECORDING
+            if (State_get(ID_ISPAUSED))
+            {
+                // change state in whatever way needed (like send "PAUSED" message to screen)
+                // State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
+                // printf("recording mode paused\n");
+                delayMs(100);
+                continue;
+            }
+            else
+            {
+                // State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
+                Metronome_runRecordingMode();
+                // change state in whatever way needed (send bpm/other ui elements to screen, etc)
+            }
+        }
+        // delayMs(20);
     }
 }

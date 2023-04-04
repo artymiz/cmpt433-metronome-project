@@ -9,5 +9,8 @@ OBJFILES= KillSignal.o Timing.o Button.o GPIO.o State.o Ticker.o Audio.o ButtonH
 
 TARGETDIR = $(HOME)/cmpt433/public/cmpt433-metronome-project
 
-all:
+all: tests
 	$(CC_C) $(CFLAGS) $(OBJFILES) -o $(TARGETDIR)/metronome $(LFLAGS)
+
+tests:
+	$(CC_C) $(CFLAGS) KillSignal.o Timing.o Button_test.o Button.o GPIO.o -o $(TARGETDIR)/Button_test $(LFLAGS)
