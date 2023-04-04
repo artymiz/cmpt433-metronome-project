@@ -4,6 +4,8 @@
 #include "ticker-prototype/Audio.h"
 #include "ticker-prototype/State.h"
 #include "Metronome.h"
+#include "utility/KillSignal.h"
+#include "utility/Timing.h"
 #include <pthread.h>
 #include <stdbool.h>
 
@@ -15,11 +17,6 @@
 //short delay always occurs, so total wait time is DELAY_LONG + DELAY_SHORT
 #define PLAY_PAUSE_DELAY_LONG 480
 #define TEMPO_CHANGE_DELAY 200
-#define METRONOME_KILL_SIGNAL -1
-#define METRONOME_PAUSE 1
-#define METRONOME_PLAY 0
-#define METRONOME_CHANGE_MODE 2
-#define METRONOME_NO_CHANGE 3
 #define VOL_CHANGE_PRESS 1
 #define VOL_CHANGE_SHORT_HOLD 3
 #define VOL_CHANGE_LONG_HOLD 5
@@ -28,56 +25,40 @@
 #define BPM_CHANGE_SHORT_HOLD 5
 #define BPM_CHANGE_LONG_HOLD 10
 
-static int bpmBeforePause;
+//alters MODE and ISPAUSED state switches if user presses the PLAY_PAUSE_SHUTDOWN button
+//does nothing if user did not press the big red button
+static void Metronome_handleModeButton();
+static void Metronome_runNormalMode();
+static void Metronome_runRecordingMode();
 
-static void delayMs(long long ms)
+static void Metronome_handleModeButton()
 {
-    const long long NS_PER_MS = 1000000;
-    const long long NS_PER_SECOND = 1000000000;
-    long long ns = ms * NS_PER_MS;
-    struct timespec ts = {ns / NS_PER_SECOND, ns % NS_PER_SECOND};
-    nanosleep(&ts, (struct timespec *)NULL);
-}
-
-// returns one of:
-// METRONOME_PAUSE/METRONOME_PLAY (the REQUESTED state)
-// METRONOME_CHANGE_MODE
-// METRONOME_KILL_SIGNAL
-// METRONOME_NO_CHANGE
-// playPauseRoutine DOES NOT change metronome state
-int Metronome_playPauseSubroutine()
-{
-    bool isPaused = State_get(ID_ISPAUSED);
-    //return val is only changed if the play/pause/shutdown/changemode button is pressed/held
-    int retVal = METRONOME_NO_CHANGE;
-
     //because Button_isPressed is true until Button_isShortHeld is true, we need make sure the pause signal is sent only once
     if (Button_isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN) && Button_getTimeHeld(BUTTON_PLAY_PAUSE_SHUTDOWN) <= BUTTON_SAMPLE_RATE_MS) 
     {
-        isPaused = !isPaused;
-        retVal = isPaused;
+        State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
     }
     if (Button_isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN))
     {
         printf("Killing program\n");
-        retVal = METRONOME_KILL_SIGNAL;
+        KillSignal_shutdown();
+
     }
     else if (Button_isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN))
     {
         printf("Changing metronome mode\n");
-        retVal = METRONOME_CHANGE_MODE;
+        State_set(ID_MODE, !State_get(ID_MODE));
     }
-    return retVal;
 }
 
-void Metronome_normalModeSubroutine(void *args)
+static void Metronome_runNormalMode()
 {
     Metronome_changeTempo();
     Metronome_changeVolume();
     delayMs(DELAY_SHORT);
 }
 
-void Metronome_recordingModeSubroutine(void* args)
+static void Metronome_runRecordingMode()
 {
     int bpm = ButtonHistory_calculateBPM();
     ButtonHistory_recordButtonPress(BUTTON_PLAY_PAUSE_SHUTDOWN); // change to ButtonHistory_recordButtonPress(BUTTON_INCREASE_TEMPO)
@@ -89,42 +70,14 @@ void Metronome_recordingModeSubroutine(void* args)
     }
 }
 
-void Metronome_mainRoutine()
+void Metronome_mainThread()
 {
-    bool killProgram = false;
-    while (!killProgram)
+    while (KillSignal_getIsRunning())
     {
-        int retVal = Metronome_playPauseSubroutine();
-        switch (retVal)
-        {
-            case METRONOME_KILL_SIGNAL :
-                killProgram = true;
-                break;
-            case METRONOME_CHANGE_MODE :
-                //toggle mode, because we only have 2
-                State_set(ID_MODE, !State_get(ID_MODE));
-                break;
-            case METRONOME_PAUSE :
-                bpmBeforePause = State_get(ID_BPM);
-                State_set(ID_BPM, 0);
-                printf("Pausing, bpm was set to: %d before pausing.\n", bpmBeforePause);
-                State_set(ID_ISPAUSED, 1);
-                break;
-            case METRONOME_PLAY :
-                //BPM was changed from outside of this thread, so we throw out bpmBeforePause
-                //and assume that the state file was changed by the other thread
-                if (State_get(ID_BPM) != 0)
-                {
-                    bpmBeforePause = 0;
-                    break;
-                }
-                State_set(ID_BPM, bpmBeforePause);
-                printf("Resuming, bpm is set to: %d\n", State_get(ID_BPM));
-                State_set(ID_ISPAUSED, 0);
-                break;
-        }
-        if (killProgram)
-            continue;
+        Metronome_handleModeButton();
+
+        if (!KillSignal_getIsRunning())
+            break;
 
         if (State_get(ID_MODE))
         { //MODE = NORMAL
@@ -133,6 +86,11 @@ void Metronome_mainRoutine()
                 //change state in whatever way needed (like send "PAUSED" message to screen)
                 delayMs(100);
                 continue;
+            }
+            else 
+            {
+                //change state in whatever way needed (send bpm/other ui elements to screen, etc)
+                Metronome_runNormalMode();
             }
         }
         else 
@@ -143,6 +101,11 @@ void Metronome_mainRoutine()
                 delayMs(100);
                 continue;
             }
+            else 
+            {
+                Metronome_runRecordingMode();
+                //change state in whatever way needed (send bpm/other ui elements to screen, etc)
+            }
         }
     }
 }
@@ -152,13 +115,14 @@ void Metronome_init()
     //set other button timing here, if needed
     Button_setShortHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, CHANGE_MODE_DELAY);
     Button_setLongHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, ON_OFF_HOLD_DELAY);
-    //theres a bunch of code in main that needs to be moved here
-    bpmBeforePause = 0;
 }
 
 void Metronome_cleanup()
 {
-    bpmBeforePause = 1;
+    //set button delays to invalid state
+    //set other button timing here, if needed
+    Button_setShortHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, -1);
+    Button_setLongHoldDelay(BUTTON_PLAY_PAUSE_SHUTDOWN, -1);
 }
 
 void Metronome_changeTempo()
@@ -183,7 +147,7 @@ void Metronome_changeTempo()
     if (newBpm != State_get(ID_BPM)) 
     {
         State_set(ID_BPM, newBpm);
-        printf("BPM changed to %d\n", newBpm);
+        printf("BPM changed to %d\n", State_get(ID_BPM));
     }
 }
 
@@ -209,7 +173,7 @@ void Metronome_changeVolume()
     newVolume += delta;
     if (newVolume != State_get(ID_VOLUME)) 
     {
-        State_set(ID_BPM, newVolume);
-        printf("Volume changed to %d\n", newVolume); 
+        State_set(ID_VOLUME, newVolume);
+        printf("Volume changed to %d\n", State_get(ID_VOLUME)); 
     }
 }

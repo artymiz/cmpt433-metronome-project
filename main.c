@@ -22,12 +22,13 @@ int main()
     Metronome_init();
 
     //blocking call
-    Metronome_mainRoutine();
+    Metronome_mainThread();
 
-    Metronome_cleanup();
-    Ticker_cleanup();
-    State_store();
+    Button_cleanupButtons();
     Audio_cleanup();
+    State_store();
+    Ticker_cleanup();
+    Metronome_cleanup();
     //sleep(1);
     return 0;
 }

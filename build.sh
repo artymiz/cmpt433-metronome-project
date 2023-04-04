@@ -19,7 +19,15 @@ echo "\e[40m\e[92m [Making and binning o files from ticker-prototype] \e[0m"
 	fi
 	cd ..
 
-echo "\e[40m\e[92m [Making and binning main.o] \e[0m"
+echo "\e[40m\e[92m [Making and binning o files from utility] \e[0m"
+	cd utility
+	if make -f Makefile
+	then
+		echo "\e[40m\e[92m [Finished] \e[0m"
+	fi
+	cd ..
+
+echo "\e[40m\e[92m [Making and binning main.o + Metronome.o] \e[0m"
 	if make -f Makefile
 	then
 		echo "\e[40m\e[92m [Finished] \e[0m"
