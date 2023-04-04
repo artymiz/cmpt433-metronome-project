@@ -16,19 +16,18 @@ int main()
     int gpioPins[NUM_BUTTONS];
     gpioPins[BUTTON_PLAY_PAUSE_SHUTDOWN] = ON_OFF_GPIO_PIN;
     Button_initButtons(gpioPins, NUM_BUTTONS);
-    Audio_init();
+    //Audio_init();
     State_load();
-    Ticker_init();
+    //Ticker_init();
     Metronome_init();
 
     //blocking call
     Metronome_mainThread();
 
     Button_cleanupButtons();
-    Audio_cleanup();
-    State_store();
-    Ticker_cleanup();
+    //Audio_cleanup();
+    //State_store();
+    //Ticker_cleanup();
     Metronome_cleanup();
-    //sleep(1);
     return 0;
 }

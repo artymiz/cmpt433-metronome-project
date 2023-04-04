@@ -33,18 +33,19 @@ static void Metronome_runRecordingMode();
 
 static void Metronome_handleModeButton()
 {
-    //because Button_isPressed is true until Button_isShortHeld is true, we need make sure the pause signal is sent only once
-    if (Button_isPressed(BUTTON_PLAY_PAUSE_SHUTDOWN) && Button_getTimeHeld(BUTTON_PLAY_PAUSE_SHUTDOWN) <= BUTTON_SAMPLE_RATE_MS) 
+    int modeButton = BUTTON_PLAY_PAUSE_SHUTDOWN;
+    if (Button_isPressed(modeButton))
     {
+        printf("pressed\n");
         State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
     }
-    if (Button_isLongHeld(BUTTON_PLAY_PAUSE_SHUTDOWN))
+    if (Button_isLongHeld(modeButton))
     {
         printf("Killing program\n");
         KillSignal_shutdown();
 
     }
-    else if (Button_isShortHeld(BUTTON_PLAY_PAUSE_SHUTDOWN))
+    else if (Button_isShortHeld(modeButton))
     {
         printf("Changing metronome mode\n");
         State_set(ID_MODE, !State_get(ID_MODE));
@@ -53,21 +54,24 @@ static void Metronome_handleModeButton()
 
 static void Metronome_runNormalMode()
 {
-    Metronome_changeTempo();
-    Metronome_changeVolume();
+    //Metronome_changeTempo();
+    //Metronome_changeVolume();
+    printf("normal mode\n");
     delayMs(DELAY_SHORT);
 }
 
 static void Metronome_runRecordingMode()
 {
-    int bpm = ButtonHistory_calculateBPM();
-    ButtonHistory_recordButtonPress(BUTTON_PLAY_PAUSE_SHUTDOWN); // change to ButtonHistory_recordButtonPress(BUTTON_INCREASE_TEMPO)
-    delayMs(20);
-    if (bpm != -1) 
-    {
-        printf("bpm after record: %d\n", bpm);
+    //int bpm = ButtonHistory_calculateBPM();
+    //ButtonHistory_recordButtonPress(BUTTON_PLAY_PAUSE_SHUTDOWN); // change to ButtonHistory_recordButtonPress(BUTTON_INCREASE_TEMPO)
+    //delayMs(20);
+    //if (bpm != -1) 
+    //{
+    //    printf("bpm after record: %d\n", bpm);
         //break;
-    }
+    //}
+    printf("recording mode\n");
+    delayMs(DELAY_SHORT);
 }
 
 void Metronome_mainThread()
@@ -107,6 +111,7 @@ void Metronome_mainThread()
                 //change state in whatever way needed (send bpm/other ui elements to screen, etc)
             }
         }
+        //delayMs(20);
     }
 }
 

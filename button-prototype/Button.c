@@ -27,6 +27,9 @@ struct button_t {
     int longHoldDelayMs;
     //this will be true for up to BUTTON_SAMPLE_RATE_MS + jitter
     int isPressed;
+    int pressHandled;
+    int shortHoldHandled;
+    int longHoldHandled;
     //this will be true for as long as the button is being sampled as true for longer than shortHoldDelayMs
     int timeHeldMs;
 };
@@ -44,9 +47,13 @@ void Button_initButtons(int* gpioPinNumbers, int numButtons)
     for (int i = 0; i < NUM_BUTTONS; ++i) 
     {
         buttons[i].gpioPinNum   = gpioPinNumbers[i];
-        buttons[i].shortHoldDelayMs  = DEFAULT_SHORT_HOLD_DELAY_MS;
-        buttons[i].timeHeldMs   = 0;
-        buttons[i].isPressed    = 0;
+        buttons[i].shortHoldDelayMs    = DEFAULT_SHORT_HOLD_DELAY_MS;
+        buttons[i].timeHeldMs          = 0;
+        buttons[i].isPressed           = 0;
+        buttons[i].pressHandled        = 0;
+        buttons[i].shortHoldHandled    = 0;
+        buttons[i].longHoldHandled     = 0;
+        
         bool isOutput = false;
         GPIO_pinMode(buttons[i].gpioPinNum, isOutput); // goes into BBG file system and writes "in" to the direction.
     }
@@ -77,6 +84,14 @@ static void* runSampleLoop()
             b->isPressed = GPIO_getValue(b->gpioPinNum);
             b->timeHeldMs = b->isPressed ? b->timeHeldMs + BUTTON_SAMPLE_RATE_MS : 0;
 
+            //handled stays true until button is released
+            if (b->pressHandled)
+                b->pressHandled = b->timeHeldMs != 0;
+            if (b->shortHoldHandled)
+                b->shortHoldHandled = b->timeHeldMs != 0;
+            if (b->longHoldHandled)
+                b->longHoldHandled = b->timeHeldMs != 0;
+
             //printf("is button[%d] pressed? %d\n", i, b->isPressed);
             //printf("is button[%d] held? %d, time held: %d\n", i, Button_isShortHeld(i), b->timeHeldMs);
         }
@@ -87,9 +102,42 @@ static void* runSampleLoop()
 
 
 
-int Button_isPressed(enum buttons button) { return buttons[button].isPressed && !Button_isShortHeld(button); }
-int Button_isShortHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].shortHoldDelayMs; }
-int Button_isLongHeld(enum buttons button) { return buttons[button].timeHeldMs > buttons[button].longHoldDelayMs; }
+int Button_isPressed(enum buttons button) 
+{
+    struct button_t* b = &buttons[button];
+    int retVal = b->isPressed && b->pressHandled == 0;
+    if (retVal) 
+    {
+        b->pressHandled = 1;
+        printf("handled first event of button press\n");
+    }
+    return retVal;
+}
+
+int Button_isShortHeld(enum buttons button) 
+{
+    struct button_t* b = &buttons[button];
+    int retVal = (b->timeHeldMs >= b->shortHoldDelayMs) && b->shortHoldHandled == 0;
+    if (retVal)
+    {
+        b->shortHoldHandled = 1;
+        printf("handled first event of button short hold\n");
+    }
+    return retVal;
+}
+
+int Button_isLongHeld(enum buttons button) 
+{ 
+    struct button_t* b = &buttons[button];
+    int retVal = (b->timeHeldMs >= b->longHoldDelayMs) && b->longHoldHandled == 0;
+    if (retVal)
+    {
+        b->longHoldHandled = 1;
+        printf("handled first event of button long hold\n");
+    }
+    return retVal;
+}
+
 int Button_getTimeHeld(enum buttons button) {  return buttons[button].timeHeldMs; }
 
 int Button_getShortHoldDelay(enum buttons button) { return buttons[button].shortHoldDelayMs; }
