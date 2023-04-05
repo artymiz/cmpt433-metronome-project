@@ -24,19 +24,22 @@ int main()
     gpioPins[BUTTON_DEC_VOL] = GPIO_DEC_VOL;
     gpioPins[BUTTON_INC_VOL] = GPIO_INC_VOL;
     gpioPins[BUTTON_PLAY_PAUSE] = GPIO_PLAY_PAUSE;
+    
+    // The order of init/cleanup functions matters.
+
     Button_initButtons(gpioPins, NUM_BUTTONS);
-    //Audio_init();
+    Audio_init();
     State_load();
-    //Ticker_init();
+    Ticker_init();
     Metronome_init();
 
-    //blocking call
+    //blocking call: returns on kill signal
     Metronome_mainThread();
 
-    Button_cleanupButtons();
-    //Audio_cleanup();
-    //State_store();
-    //Ticker_cleanup();
     Metronome_cleanup();
+    Ticker_cleanup();
+    State_store();
+    Audio_cleanup();
+    Button_cleanupButtons();
     return 0;
 }

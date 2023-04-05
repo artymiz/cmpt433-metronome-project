@@ -10,21 +10,7 @@ CC_C = $(CROSS_TOOL)gcc
 CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -Werror
 CFLAGSLIB = -Wall -g -c -std=c99 -D _POSIX_C_SOURCE=200809L -Werror
 
-
-# Asound process:
-# get alibsound2 lib on target:
-# 	# apt-get install libasound2
-# Copy target's /usr/lib/arm-linux-gnueabihf/libasound.so.2.0.0 
-#      to host  ~/public/asound_lib_BBG/libasound.so
-# Copy to just base library:
-LFLAGS = -L$(HOME)/cmpt433/public/asound_lib_BBG
-
-# -pg for supporting gprof profiling.
-#CFLAGS += -pg
-
-all: Ticker_test
-
-Ticker_test:
+all: 
 	$(CC_C) $(CFLAGSLIB) Audio.c -o $(OBJDIR)/Audio.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) State_test.c -o $(OBJDIR)/State_test.o  $(LFLAGS) -lpthread -lasound
@@ -32,12 +18,3 @@ Ticker_test:
 	$(CC_C) $(CFLAGSLIB) Ticker_test.c -o $(OBJDIR)/Ticker_test.o  $(LFLAGS) -lpthread -lasound
 	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
 	cp State.txt $(OUTDIR)/State.txt
-# ticker:
-# 	$(CC_C) $(CFLAGS) Timing.c Audio.c ticker.c -o $(OUTDIR)/ticker  $(LFLAGS) -lpthread -lasound
-
-# Copy wav file
-wav:
-	cp metronome-tick.wav $(OUTDIR)/metronome-tick.wav
-
-State_test: State.c State_test.c
-	gcc -g State.c State_test.c -o State_test

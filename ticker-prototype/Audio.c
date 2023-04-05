@@ -5,9 +5,11 @@
  */
 
 #include <alsa/asoundlib.h>
+#include <alloca.h> // needed for mixer
 #include "Audio.h"
 
 static snd_pcm_t *handle;
+static int old_volume = 0;
 
 // Open the PCM audio output device and configure it.
 // Returns a handle to the PCM device; needed for other actions.
@@ -95,6 +97,44 @@ int Audio_load(char *fileName, wavedata_t *pWaveData, int sampleCountRequested)
 	return pWaveData->numSamples;
 }
 
+// Function copied from:
+// http://stackoverflow.com/questions/6787318/set-alsa-master-volume-from-c-code
+// Written by user "trenki".
+int Audio_setVolume(int volume)
+{
+	if (volume < 0 || volume > 100)
+	{
+		fprintf(stderr, "Audio ERROR: setting invalid volume\n");
+		exit(1);
+	}
+
+	if (volume != old_volume) {
+		long min, max;
+		snd_mixer_t* volHandle;
+		snd_mixer_selem_id_t* sid;
+		const char* card = "default";
+		const char* selem_name = "PCM";
+
+		snd_mixer_open(&volHandle, 0);
+		snd_mixer_attach(volHandle, card);
+		snd_mixer_selem_register(volHandle, NULL, NULL);
+		snd_mixer_load(volHandle);
+
+		snd_mixer_selem_id_alloca(&sid);
+		snd_mixer_selem_id_set_index(sid, 0);
+		snd_mixer_selem_id_set_name(sid, selem_name);
+		snd_mixer_elem_t* elem = snd_mixer_find_selem(volHandle, sid);
+
+		snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
+		snd_mixer_selem_set_playback_volume_all(elem, volume * max / 100);
+
+		snd_mixer_close(volHandle);
+		old_volume = volume;
+	}
+
+	return 0;
+}
+
 // Play wavedata
 void Audio_play(wavedata_t *pWaveData)
 {
@@ -102,6 +142,7 @@ void Audio_play(wavedata_t *pWaveData)
 	fflush(stdout);
 
 	// Write data and play sound (blocking)
+	snd_pcm_start(handle);
 	snd_pcm_sframes_t frames = snd_pcm_writei(handle, pWaveData->pData, pWaveData->numSamples);
 	
 	// Check for errors
