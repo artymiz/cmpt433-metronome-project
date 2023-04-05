@@ -30,6 +30,8 @@ static void *tickerRoutine(void *args)
     {
         int bpm = State_get(ID_BPM);
         int timeSig = State_get(ID_TIMESIG);
+
+        // ! State get the amount of audio samples
         
         int volumeBeat1 = State_get(ID_VOLUME);
         int volumeBeatOther = volumeBeat1 * 0.65;
