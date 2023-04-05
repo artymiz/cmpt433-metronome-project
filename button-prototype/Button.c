@@ -56,6 +56,7 @@ void Button_initButtons(int* gpioPinNumbers, int numButtons)
         buttons[i].longHoldHandled     = 0;
         
         bool isOutput = false;
+        printf("buttons[i].gpioPinNum = %d\n", buttons[i].gpioPinNum);
         GPIO_pinMode(buttons[i].gpioPinNum, isOutput); // goes into BBG file system and writes "in" to the direction.
     }
     //create new thread to check state of all buttons every BUTTON_SAMPLE_RATE_MS
