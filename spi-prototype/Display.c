@@ -15,7 +15,7 @@
 #define CS_LOW GPIO_setValue(CS_PIN, false);
 #define CS_HIGH GPIO_setValue(CS_PIN, true);
 
-#define RST_PIN 68
+#define RST_PIN 44
 #define RST_LOW GPIO_setValue(RST_PIN, false);
 #define RST_HIGH GPIO_setValue(RST_PIN, true);
 

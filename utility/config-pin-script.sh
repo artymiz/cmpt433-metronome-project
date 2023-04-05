@@ -1,5 +1,5 @@
 #config pins for the screen
-config-pin P8_10 gpio       # RST (reset)
+config-pin P8_12 gpio       # RST (reset)
 config-pin P9_15 gpio       # CS (chip select)
 config-pin P9_18 spi        # MOSI (master out slave in)
 config-pin P9_21 spi        # MISO (master in slave out)
@@ -12,6 +12,8 @@ sudo echo 67 > /sys/class/gpio/export
 sudo echo 69 > /sys/class/gpio/export
 sudo echo 68 > /sys/class/gpio/export
 sudo echo 45 > /sys/class/gpio/export
+
+sudo echo 44 > /sys/class/gpio/export
 
 config-pin p8.7 gpio # gpio 66
 config-pin p8.8 gpio # gpio 67
