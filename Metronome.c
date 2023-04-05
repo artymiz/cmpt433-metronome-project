@@ -140,6 +140,7 @@ void Metronome_cleanup()
     // set other button timing here, if needed
     Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, -1);
     Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, -1);
+    pthread_cancel(udpListenerThread);
     pthread_join(udpListenerThread, NULL);
     UDPListenerCleanup();
 }
