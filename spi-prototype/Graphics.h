@@ -1,10 +1,7 @@
-#include <stddef.h>
-#include <stdint.h>
-#include <stdint.h>
-#include <stdbool.h>
-
 #ifndef _GRAPHICS_H_
 #define _GRAPHICS_H_
+
+#include <stdint.h>
 
 void Graphics_init(void);
 void Graphics_setTextColor(uint32_t rgb);
