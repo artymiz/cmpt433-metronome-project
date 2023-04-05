@@ -13,6 +13,7 @@ typedef struct {
 
 // Prototypes:
 void Audio_init();
+int Audio_setVolume(int volume);
 int Audio_load(char *fileName, wavedata_t *pWaveData, int samplesToLoad);
 void Audio_play(wavedata_t *pWaveData);
 void Audio_cleanup();

@@ -5,18 +5,24 @@
 #include <string.h>
 #include <math.h>
 #include "State.h"
+#include <pthread.h>
 
-static int state[STATECOUNT]; // bpm, volume, beatsPerBar, mode (normal/recording), isPaused
+//mutex for writing/reading state file
+pthread_mutex_t stateMutex;
+//mutex for altering a single state setting
+pthread_mutex_t stateSettingMutex[STATECOUNT];
+
+static int state[STATECOUNT]; // bpm, volume, time signature, mode (normal/recording), isPaused
 // inclusive boundaries for state values
 static float stateMins[] = {1, //BPM
                             0, //volume
-                            1, //beats per bar
+                            1, //time signature
                             0, //mode
                             0  //is paused
                            };
 static float stateMaxs[] = {350, //BPM
                             100, //volume
-                            100, //beats per bar
+                            100, //time signature
                             1,   //mode
                             1    //is paused
                             };
@@ -24,9 +30,11 @@ static float stateMaxs[] = {350, //BPM
 // File to array
 void State_load()
 {
+    pthread_mutex_lock(&stateMutex);
     FILE *fState = fopen("State.txt", "r");
     if (!fState) {
         perror("Cannot open State.txt");
+        pthread_mutex_unlock(&stateMutex);
         exit(1);
     }
     char * line = NULL;
@@ -37,6 +45,7 @@ void State_load()
         state[id] = atoi(line);
         id++;
     }
+    pthread_mutex_unlock(&stateMutex);
     free(line);
     fclose(fState);
 }
@@ -44,6 +53,7 @@ void State_load()
 // Array to file
 void State_store()
 {
+    pthread_mutex_lock(&stateMutex);
     FILE *fState = fopen("State.txt", "w");
     if (!fState)
     {
@@ -56,6 +66,7 @@ void State_store()
         sprintf(str, "%d\n", state[id]);
         fwrite(str, 1, strlen(str), fState);
     }
+    pthread_mutex_unlock(&stateMutex);
     fclose(fState);
 }
 
@@ -66,6 +77,7 @@ int State_get(stateid_t id)
 
 void State_set(stateid_t id, int val)
 {
+    pthread_mutex_lock(&stateSettingMutex[id]);
     if (val < stateMins[id])
     {
         state[id] = stateMins[id];
@@ -78,4 +90,6 @@ void State_set(stateid_t id, int val)
     {
         state[id] = val;
     }
+    pthread_mutex_unlock(&stateSettingMutex[id]);
+
 }

@@ -48,6 +48,7 @@ void Button_initButtons(int* gpioPinNumbers, int numButtons)
     {
         buttons[i].gpioPinNum   = gpioPinNumbers[i];
         buttons[i].shortHoldDelayMs    = DEFAULT_SHORT_HOLD_DELAY_MS;
+        buttons[i].longHoldDelayMs     = DEFAULT_LONG_HOLD_DELAY_MS;
         buttons[i].timeHeldMs          = 0;
         buttons[i].isPressed           = 0;
         buttons[i].pressHandled        = 0;
@@ -63,6 +64,7 @@ void Button_initButtons(int* gpioPinNumbers, int numButtons)
 
 void Button_cleanupButtons()
 {
+    pthread_cancel(readLoop);
     pthread_join(readLoop, NULL);
     for (int i = 0; i < NUM_BUTTONS; ++i) {
         //set all button data to be invalid for soft resets
@@ -76,7 +78,7 @@ void Button_cleanupButtons()
 //loops through all buttons, checking/updating each of their states
 static void* runSampleLoop()
 {
-    while (KillSignal_getIsRunning())
+    while (1)
     {
         for (int i = 0; i < NUM_BUTTONS; ++i) 
         {
@@ -111,7 +113,7 @@ int Button_justPressed(enum buttons button)
     if (retVal) 
     {
         b->pressHandled = 1;
-        printf("handled first event of button press\n");
+        // printf("handled first event of button press\n");
     }
     return retVal;
 }
@@ -123,7 +125,7 @@ int Button_justShortHeld(enum buttons button)
     if (retVal)
     {
         b->shortHoldHandled = 1;
-        printf("handled first event of button short hold\n");
+        // printf("handled first event of button short hold\n");
     }
     return retVal;
 }
@@ -135,7 +137,7 @@ int Button_justLongHeld(enum buttons button)
     if (retVal)
     {
         b->longHoldHandled = 1;
-        printf("handled first event of button long hold\n");
+        // printf("handled first event of button long hold\n");
     }
     return retVal;
 }

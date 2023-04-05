@@ -2,11 +2,11 @@
 #define BUTTON_H
 #define BUTTON_SAMPLE_RATE_MS 20
 enum buttons {
-    BUTTON_PLAY_PAUSE_SHUTDOWN = 0,
-    //BUTTON_INCREASE_TEMPO, 
-    //BUTTON_DECREASE_TEMPO,
-    //BUTTON_INCREASE_VOLUME, 
-    //BUTTON_DECREASE_VOLUME,
+    BUTTON_DEC_BPM,
+    BUTTON_INC_BPM, 
+    BUTTON_DEC_VOL,
+    BUTTON_INC_VOL, 
+    BUTTON_PLAY_PAUSE,
     NUM_BUTTONS
 };
 //returns true until a button is released

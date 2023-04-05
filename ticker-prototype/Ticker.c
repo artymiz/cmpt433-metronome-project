@@ -14,28 +14,51 @@ static wavedata_t tick;
 static wavedata_t silence;
 static bool initialized = false;
 
+int circularAdd(int val, int valMax)
+{
+    if (val < valMax) 
+    {
+        return val + 1;
+    }
+    return 1;
+}
+
 static void *tickerRoutine(void *args)
 {
+    int currentBeat = 1;
     while (1)
     {
         int bpm = State_get(ID_BPM);
-	if (bpm == 0) 
-	{
-	    printf("BPM cannot be zero\n");
-	    exit(1);
-	}
-	bool isPaused = State_get(ID_ISPAUSED);
-	if (isPaused) 
-	{
-	    silence.numSamples = SAMPLE_RATE; // arbitrary number of samples
-	    Audio_play(&silence);
-	}
-	else 
-	{	
+        int timeSig = State_get(ID_TIMESIG);
+        
+        int volumeBeat1 = State_get(ID_VOLUME);
+        int volumeBeatOther = volumeBeat1 * 0.65;
+
+        if (currentBeat == 1)
+            Audio_setVolume(volumeBeat1);
+        else
+            Audio_setVolume(volumeBeatOther);
+
+        if (bpm == 0) 
+        {
+            printf("BPM cannot be zero\n");
+            exit(1);
+        }
+        
+        bool isPaused = State_get(ID_ISPAUSED);
+        if (isPaused) 
+        {
+            silence.numSamples = SAMPLE_RATE; // arbitrary number of samples
+            Audio_play(&silence);
+        }
+        else 
+        {	
             silence.numSamples = SAMPLE_RATE * (60.0 / bpm) - TICK_SAMPLE_COUNT;
             Audio_play(&tick);
             Audio_play(&silence);
-	}
+            currentBeat = circularAdd(currentBeat, timeSig);
+            // printf("--> Current beat: %d\n", currentBeat);
+        }
     }
     return NULL;
 }
