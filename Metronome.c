@@ -144,8 +144,9 @@ static void Metronome_checkPlayPauseButton()
     int modeButton = BUTTON_PLAY_PAUSE;
     if (Button_justPressed(modeButton)) // toggle play/pause
     {
-        printf("Toogle play/pause\n");
-        State_set(ID_ISPAUSED, !State_get(ID_ISPAUSED));
+        bool isPaused = !State_get(ID_ISPAUSED); // new isPaused value
+        State_set(ID_ISPAUSED, isPaused);
+        printf("%s\n", isPaused ? "PAUSED" : "PLAYING");
     }
     if (Button_justLongHeld(modeButton)) // shutdown
     {
