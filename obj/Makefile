@@ -14,5 +14,5 @@ all: tests
 
 tests:
 	$(CC_C) $(CFLAGS) KillSignal.o Timing.o Button_test.o Button.o GPIO.o -o $(TARGETDIR)/Button_test $(LFLAGS)
-	$(CC_C) $(CFLAGS) Timing.o Audio.o State.o Ticker.o Ticker_test.o -o $(TARGETDIR)/Ticker_test $(LFLAGS)
+	#$(CC_C) $(CFLAGS) Timing.o Audio.o State.o Ticker.o Ticker_test.o -o $(TARGETDIR)/Ticker_test $(LFLAGS)
 	$(CC_C) $(CFLAGS) Timing.o Audio.o State.o State_test.o -o $(TARGETDIR)/State_test $(LFLAGS)

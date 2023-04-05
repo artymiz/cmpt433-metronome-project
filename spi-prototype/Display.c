@@ -209,7 +209,6 @@ void setWriteArea(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
 // Setup all pins, turn on display, clear its memory and make it all white.
 void Display_init()
 {
-    system("./config-pin-script.sh > /dev/null");
     initGpio();
     spiOpen();
     hardwareReset();
