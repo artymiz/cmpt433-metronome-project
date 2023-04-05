@@ -7,9 +7,11 @@
 #include "Audio.h"
 #include "State.h"
 #include "Ticker.h"
+#include "../spi-prototype/Ui.h"
 
 static int16_t *zeros = NULL;
 static pthread_t tickerRoutineThread;
+static pthread_t displayNextRoutineThread;
 static sem_t drawSyncSem;
 
 static wavedata_t ticks[SAMPLENUM_MAX];
@@ -67,9 +69,28 @@ static void *tickerRoutine(void *args)
     return NULL;
 }
 
+
+void *displayNextRoutine(void *args)
+{
+    while (1)
+    {
+
+        sem_wait(&drawSyncSem);
+        UI_setNextTick();
+    }
+    return NULL;
+}
+
 // Relies on Audio and State modules being initialized
 void Ticker_init()
 {
+    const int bpm = State_get(ID_BPM);
+    const int vol = State_get(ID_VOLUME);
+    const int sampleId = State_get(ID_SAMPLE);
+    const int timeSig = State_get(ID_TIMESIG);
+
+    UI_init(bpm, vol, sampleId, timeSig);
+
     // ticks/0.wav
     sem_init(&drawSyncSem, 0, 1);
     char tickString[] = {'t', 'i', 'c', 'k', 's', '/', '0', '.', 'w', 'a', 'v', '\0'};
@@ -89,6 +110,7 @@ void Ticker_init()
     silence.pData = zeros;
 
     pthread_create(&tickerRoutineThread, NULL, tickerRoutine, NULL);
+    pthread_create(&displayNextRoutineThread, NULL, displayNextRoutine, NULL);
     initialized = true;
 }
 

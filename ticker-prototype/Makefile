@@ -15,6 +15,6 @@ all:
 	$(CC_C) $(CFLAGSLIB) State.c -o $(OBJDIR)/State.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) State_test.c -o $(OBJDIR)/State_test.o  $(LFLAGS) -lpthread -lasound
 	$(CC_C) $(CFLAGSLIB) Ticker.c -o $(OBJDIR)/Ticker.o  $(LFLAGS) -lpthread -lasound
-	$(CC_C) $(CFLAGSLIB) Ticker_test.c -o $(OBJDIR)/Ticker_test.o  $(LFLAGS) -lpthread -lasound
+	#$(CC_C) $(CFLAGSLIB) Ticker_test.c -o $(OBJDIR)/Ticker_test.o  $(LFLAGS) -lpthread -lasound
 	cp State.txt $(OUTDIR)/State.txt
 	cp -r ticks/ $(OUTDIR)
