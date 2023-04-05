@@ -3,17 +3,8 @@
 #include "Display.h"
 #include <stdbool.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include <assert.h>
-
-typedef struct Info {
-    unsigned bpm;
-    unsigned vol;
-    unsigned sampleId;
-    unsigned timeSig;
-    unsigned tickIdx;
-}Info;
-
-static Info _ui_info;
 
 #define RGB_WHITE 0xffffff
 #define RGB_BLACK 0x000000
@@ -21,24 +12,43 @@ static Info _ui_info;
 #define RGB_PAUSE_OUTLINE RGB_BLACK
 #define RGB_BACKGROUND RGB_WHITE
 #define RGB_PLAY_FILL 0x00ff00
-
-#define PADDING_LAYOUT 10
 #define STROKE_TIMESIG 4
 #define H_TIMESIG 100
 
+#define PADDING_LAYOUT 10
+#define FONTSIZE_LARGE 5
+#define FONTSIZE_SMALL 2
+#define Y_BPM 120
+#define Y_VOL 170
+#define X_NUM 140
+#define Y_SAMPLE_LBL 150
+#define X_SAMPLE_LBL 262
+#define Y_SAMPLE_NUM 170
+#define X_SAMPLE_NUM 273
+
+#define SLEN_MAX 4
+
+
+static char *_sbuf;
 
 void UI_setBpm(unsigned bpm)
 {
+    sprintf(_sbuf, "%u", bpm);
+    Graphics_writeStr(_sbuf, FONTSIZE_LARGE, X_NUM, Y_BPM);
 }
 
 
 void UI_setVolume(unsigned vol)
 {
+    sprintf(_sbuf, "%u", vol);
+    Graphics_writeStr(_sbuf, FONTSIZE_LARGE, X_NUM, Y_VOL);
 }
 
 
 void UI_setAudioSample(unsigned sampleId)
 {
+    sprintf(_sbuf, "%u", sampleId);
+    Graphics_writeStr(_sbuf, FONTSIZE_LARGE, X_SAMPLE_NUM, Y_SAMPLE_NUM);
 }
 
 
@@ -106,9 +116,13 @@ void UI_setNextTick(void)
 
 void UI_init(unsigned bpm, unsigned vol, unsigned sampleId, unsigned timeSig)
 {
+    _sbuf = malloc(SLEN_MAX);
     Graphics_init();
+    Graphics_writeStr("BPM:", FONTSIZE_LARGE, PADDING_LAYOUT, Y_BPM);
     UI_setBpm(bpm);
+    Graphics_writeStr("VOL:", FONTSIZE_LARGE, PADDING_LAYOUT, Y_VOL);
     UI_setVolume(vol);
+    Graphics_writeStr("Audio", FONTSIZE_LARGE, X_SAMPLE_LBL, Y_SAMPLE_LBL);
     UI_setAudioSample(sampleId);
     UI_setTimeSignature(timeSig);
 }
@@ -116,18 +130,8 @@ void UI_init(unsigned bpm, unsigned vol, unsigned sampleId, unsigned timeSig)
 
 void UI_cleanUp(void)
 {
+    free(_sbuf);
     free(_cell_positions);
     Graphics_cleanup();
 }
-
-
-// ================
-// Helper Functions
-// ================
-
-#define PADDING_LAYOUT 10
-#define X_BPM
-#define Y_BPM
-#define STRLEN_BPM 4
-#define STROKE_BPM 5
 
