@@ -216,7 +216,6 @@ void Metronome_mainThread()
 {
     while (KillSignal_getIsRunning())
     {
-        continue;
         Metronome_checkPlayPauseButton();
 
         if (!KillSignal_getIsRunning())
