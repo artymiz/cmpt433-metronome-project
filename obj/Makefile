@@ -5,7 +5,7 @@ LFLAGS = -L$(HOME)/cmpt433/public/asound_lib_BBG -lpthread -lasound
 #when the compile_program script runs this file, it treats it like it 
 #is running from the root, so this folder name is added to each file name
 #used if compiling "locally" (from this folder, not using script)
-OBJFILES= UDPMessageController.o KillSignal.o Timing.o Button.o GPIO.o State.o Ticker.o Audio.o ButtonHistory.o Metronome.o main.o 
+OBJFILES= Display.o Graphics.o Ui.o UDPMessageController.o KillSignal.o Timing.o Button.o GPIO.o State.o Ticker.o Audio.o ButtonHistory.o Metronome.o main.o 
 
 TARGETDIR = $(HOME)/cmpt433/public/cmpt433-metronome-project
 

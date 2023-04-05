@@ -53,7 +53,7 @@ static void setPixel(uint8_t *buff, uint8_t bit)
 
 static void setBlock(uint8_t *buff, uint16_t offset, uint8_t bit, uint16_t w, uint16_t blocksize)
 {
-    const uint n = blocksize * RGB_LEN;
+    const unsigned n = blocksize * RGB_LEN;
     for (int i = 0; i < n; i+=RGB_LEN) {
         for (int j = 0; j < n; j+=RGB_LEN) {
             setPixel(buff + offset + (i * w + j), bit);
@@ -173,7 +173,7 @@ static int _rect_stroke;
 
 static void setFilledRectBuff(uint8_t *buff, uint16_t w, uint16_t h, uint32_t rgb)
 {
-    uint n = w * h * RGB_LEN;
+    unsigned n = w * h * RGB_LEN;
     for (int i = 0; i < n; i += RGB_LEN) {
         memcpy(buff + i, (char*)&rgb, RGB_LEN);
     }
@@ -200,7 +200,7 @@ typedef void (*setBuffFuncPtr_t)(uint8_t*, uint16_t, uint16_t, uint32_t);
 static void writeRect(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h,
                       uint32_t rgb, setBuffFuncPtr_t fp)
 {
-    uint n = w * h * RGB_LEN;
+    unsigned n = w * h * RGB_LEN;
     uint8_t *buff = malloc(n);
     fp(buff, w, h, rgb);
     Display_memoryWrite(buff, getDisplayX(y0, h), getDisplayY(x0, w), h, w);

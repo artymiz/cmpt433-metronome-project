@@ -27,6 +27,14 @@ echo "\e[40m\e[92m [Making and binning o files from utility] \e[0m"
 	fi
 	cd ..
 
+echo "UI module and graphics module"
+    cd spi-prototype
+    if make -f Makefile
+    then
+        echo "UI module and graphics module success"
+    fi
+    cd ..
+
 echo "\e[40m\e[92m [Making and binning main.o + Metronome.o] \e[0m"
 	if make -f Makefile
 	then
@@ -56,7 +64,7 @@ echo "\e[40m\e[92m [Sending out (.sh, .wav, etc) files to target] \e[0m"
 	cp -r server $TARGETDIR
 	echo "sending State.txt to target"
 	if cp out/State.txt $TARGETDIR/State.txt
-	then 
+	then
 		echo "\e[40m\e[92m [Finished] \e[0m"
 	else
 		echo "\e[40m\e[31m [Build failed at copying files out to target] \e[0m"

@@ -8,7 +8,7 @@
 #include <time.h>
 #include <assert.h>
 #include <unistd.h>
-#include "GPIO.h"
+#include "../utility/GPIO.h"
 #include "Display.h"
 
 #define CS_PIN 48
@@ -41,7 +41,7 @@ static const command_t COL_ADDR_SET        = {0x2A, 4, 0};  // Column address se
 static const command_t PAGE_ADDR_SET       = {0x2B, 4, 0};  // Row address set (for memory write)
 static const command_t MEMORY_WRITE        = {0x2C, 0, 0};  // Memory write (signal start of pixel data)
 static const command_t READ_POWER_MODE     = {0x0A, 0, 1};
-static const command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
+// static const command_t READ_DISPLAY_STATUS = {0x09, 0, 4};
 
 static void delayMs(long long ms)
 {
@@ -75,7 +75,7 @@ static void hardwareReset()
     delayMs(20);
 }
 
-static int spiOpen()
+static void spiOpen()
 {
     // Open Device
     spiFileDesc = open(SPI_DEVICE, O_RDWR);
@@ -94,7 +94,7 @@ static int spiOpen()
     }
 }
 
-static int spiClose()
+static void spiClose()
 {
     close(spiFileDesc);
 }
