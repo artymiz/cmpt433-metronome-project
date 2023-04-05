@@ -54,7 +54,7 @@ static void delayMs(long long ms)
 
 static void initGpio()
 {
-    GPIO_pinMode(CS_PIN, true); 
+    GPIO_pinMode(CS_PIN, true);
     GPIO_pinMode(RST_PIN, true);
     GPIO_pinMode(DC_PIN, true);
     // These are the default states of the pins,
@@ -119,7 +119,7 @@ static void spiTransfer(uint8_t *sendBuf, uint8_t *receiveBuf, int length)
 
 // Commands starting with READ require rxBuf to be freed (non null return from sendCommand)
 static uint8_t *sendCommand(command_t c, uint8_t *params)
-{   
+{
     size_t txBufSize = c.num_params;
     size_t rxBufSize = c.response_size;
     size_t bufSize = txBufSize > rxBufSize ? txBufSize : rxBufSize; // max
@@ -156,14 +156,14 @@ uint16_t reverse16(uint16_t value)
             ((value & 0xFF00) >> 8));
 }
 
-// https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf page 14: 
+// https://cdn-shop.adafruit.com/datasheets/ILI9340.pdf page 14:
 // Column address set, Row address set, then memory write.
 // Also same as: https://github.com/adafruit/Adafruit_ILI9341/blob/master/Adafruit_ILI9341.cpp (setAddrWindow)
 void setWriteArea(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
 {
     static uint16_t old_x0 = 0xffff, old_x1 = 0xffff;
     static uint16_t old_y0 = 0xffff, old_y1 = 0xffff;
-    
+
     uint16_t x1 = x0 + w - 1;
     uint16_t y1 = y0 + h - 1;
 
@@ -173,7 +173,7 @@ void setWriteArea(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
         assert(x1 < COL_MAX); // 0 - 239 (0 indexed)
         old_x0 = x0;
         old_x1 = x1;
-        
+
         // Convert from little endian to big endian.
         uint16_t x0_be = reverse16(x0);
         uint16_t x1_be = reverse16(x1);
@@ -192,7 +192,7 @@ void setWriteArea(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
         assert(y1 < ROW_MAX); // 0 - 239 (0 indexed)
         old_y0 = y0;
         old_y1 = y1;
-        
+
         // Convert from little endian to big endian.
         uint16_t y0_be = reverse16(y0);
         uint16_t y1_be = reverse16(y1);
@@ -216,7 +216,7 @@ void Display_init()
     sendCommand(SLEEP_OUT, NULL);
     delayMs(60);
     sendCommand(DISPLAY_ON, NULL);
-    
+
     // Make sure everything is working.
     uint8_t *powerMode = sendCommand(READ_POWER_MODE, NULL);
     assert(powerMode[0] == 0x9C);
@@ -229,26 +229,39 @@ void Display_init()
     Display_memoryWrite(whiteBuf, 0, 0, COL_MAX, ROW_MAX);
 }
 
+// copy n elements from src to dst
+// srcOffset is incremented for every element copied
+static size_t copy_n(uint8_t *dst, uint8_t *src,
+        size_t *srcOffset, size_t srcLen, size_t n)
+{
+    size_t src_i = *srcOffset;
+    size_t dst_i = 0;
+
+    for (; src_i < srcLen && dst_i < n; dst_i++, src_i++) {
+        dst[dst_i] = src[src_i];
+    }
+    *srcOffset = src_i;
+
+    return dst_i;
+}
+
 void Display_memoryWrite(uint8_t *buff, uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
 {
     setWriteArea(x0, y0, w, h);
-    
-    sendCommand(MEMORY_WRITE, NULL);
-    
-    const size_t bytesToWrite = w * h * 3;
-    uint8_t writeBuf[SPI_MAX_LEN];
-    size_t copy_i = 0;
-    while (copy_i < bytesToWrite) {
-        size_t bytesToCopy = bytesToWrite < SPI_MAX_LEN ? bytesToWrite : SPI_MAX_LEN;
-        memcpy(writeBuf, buff, bytesToCopy);
-        
-        CS_LOW
-        spiTransfer(writeBuf, NULL, bytesToCopy);
-        CS_HIGH
 
-        copy_i += bytesToCopy;
+    sendCommand(MEMORY_WRITE, NULL);
+
+    const size_t buffSize = w * h * 3;
+    size_t buffIdx = 0;
+    uint8_t wrtBuf[SPI_MAX_LEN];
+    size_t wrtBytes;
+
+    while ((wrtBytes = copy_n(wrtBuf, buff, &buffIdx, buffSize, SPI_MAX_LEN))) {
+        CS_LOW
+        spiTransfer(wrtBuf, NULL, wrtBytes);
+        CS_HIGH
     }
-    
+
     sendCommand(NOP, NULL);
 }
 
