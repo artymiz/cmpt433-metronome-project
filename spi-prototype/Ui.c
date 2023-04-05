@@ -31,16 +31,28 @@
 
 static char *_sbuf;
 
+// pad buffer to cover a 3 character width area
+static void setSbuf(unsigned bpm)
+{
+    if (bpm < 10) {
+        sprintf(_sbuf, "%u  ", bpm);
+    } else if (bpm < 100) {
+        sprintf(_sbuf, "%u ", bpm);
+    } else {
+        sprintf(_sbuf, "%u", bpm);
+    }
+}
+
 void UI_setBpm(unsigned bpm)
 {
-    sprintf(_sbuf, "%u", bpm);
+    setSbuf(bpm);
     Graphics_writeStr(_sbuf, FONTSIZE_LARGE, X_NUM, Y_BPM);
 }
 
 
 void UI_setVolume(unsigned vol)
 {
-    sprintf(_sbuf, "%u", vol);
+    setSbuf(vol);
     Graphics_writeStr(_sbuf, FONTSIZE_LARGE, X_NUM, Y_VOL);
 }
 
@@ -96,6 +108,10 @@ static void emptyLastCell(void)
     if (_idx_last_tick == -1) { return; }
     Graphics_fillRect(_cell_positions[_idx_last_tick].x, _cell_positions[_idx_last_tick].y,
                       _w_cell, _h_cell, RGB_BACKGROUND);
+}
+
+static void clearArea(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h)
+{
 }
 
 void UI_setNoTick(void)
