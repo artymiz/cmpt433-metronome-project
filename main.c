@@ -28,18 +28,18 @@ int main()
     // The order of init/cleanup functions matters.
 
     Button_initButtons(gpioPins, NUM_BUTTONS);
-    Audio_init();
+    //Audio_init();
     State_load();
-    Ticker_init();
+    //Ticker_init();
     Metronome_init();
 
     //blocking call: returns on kill signal
     Metronome_mainThread();
 
     Metronome_cleanup();
-    Ticker_cleanup();
+    //Ticker_cleanup();
     State_store();
-    Audio_cleanup();
+    //Audio_cleanup();
     Button_cleanupButtons();
     return 0;
 }

@@ -52,6 +52,8 @@ echo "\e[40m\e[92m [Sending out (.sh, .wav, etc) files to target] \e[0m"
 	cp out/config-pin-script.sh $TARGETDIR/config-pin-script.sh
 	echo "sending metronome-tick.wav to target"
 	cp out/metronome-tick.wav $TARGETDIR/metronome-tick.wav
+	echo "sending server files to target"
+	cp -r server $TARGETDIR
 	echo "sending State.txt to target"
 	if cp out/State.txt $TARGETDIR/State.txt
 	then 

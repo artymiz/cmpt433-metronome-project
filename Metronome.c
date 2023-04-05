@@ -8,6 +8,7 @@
 #include "utility/Timing.h"
 #include <pthread.h>
 #include <stdbool.h>
+#include "utility/UDPMessageController.h"
 
 #define CHANGE_MODE_DELAY 1000
 #define ON_OFF_HOLD_DELAY 3000
@@ -46,6 +47,8 @@ static struct configCommand volCommandInc;
 static struct configCommand volCommandDec;
 static struct configCommand timeSigCommandInc;
 static struct configCommand timeSigCommandDec;
+static pthread_t udpListenerThread;
+static void* Metronome_runUDPListeningLoop();
 
 void Metronome_changeStateSetting(struct configCommand* command)
 {
@@ -74,6 +77,7 @@ void Metronome_changeStateSetting(struct configCommand* command)
 
 void Metronome_init()
 {
+    UDPListenerInit();
     // set other button timing here, if needed
     Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, CHANGE_MODE_DELAY);
     Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, ON_OFF_HOLD_DELAY);
@@ -125,6 +129,9 @@ void Metronome_init()
     bpmCommandDec.deltas[1] = BPM_CHANGE_SHORT_HOLD;
     bpmCommandDec.deltas[2] = BPM_CHANGE_LONG_HOLD;
     bpmCommandDec.direction = -1;
+
+    pthread_create(&udpListenerThread, NULL, &Metronome_runUDPListeningLoop, NULL);
+
 }
 
 void Metronome_cleanup()
@@ -133,6 +140,8 @@ void Metronome_cleanup()
     // set other button timing here, if needed
     Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, -1);
     Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, -1);
+    pthread_join(udpListenerThread, NULL);
+    UDPListenerCleanup();
 }
 
 /**
@@ -190,6 +199,7 @@ void Metronome_mainThread()
 {
     while (KillSignal_getIsRunning())
     {
+        continue;
         Metronome_checkPlayPauseButton();
 
         if (!KillSignal_getIsRunning())
@@ -231,4 +241,31 @@ void Metronome_mainThread()
         }
         //delayMs(20);
     }
+}
+
+static void* Metronome_runUDPListeningLoop() {
+    char* message;
+    while (KillSignal_getIsRunning()) {
+        message = UDPlistenForMessage();
+        //printf(message);
+        if (strncmp(message, "tempoinc", 9) == 0) {
+            if (!State_get(ID_ISPAUSED))
+                State_set(ID_BPM, State_get(ID_BPM) + 5);
+            memset(message, 0, UDP_PACKET_SIZE);
+            snprintf(message, UDP_PACKET_SIZE, "tempo %d", State_get(ID_BPM));
+            UDPreturnPacket(message);
+        } else if (strncmp(message, "tempodec", 9) == 0) {
+            if (!State_get(ID_ISPAUSED))
+                State_set(ID_BPM, State_get(ID_BPM) - 5);
+            memset(message, 0, UDP_PACKET_SIZE);
+            snprintf(message, UDP_PACKET_SIZE, "tempo %d", State_get(ID_BPM));
+            UDPreturnPacket(message);
+        } else if (strncmp(message, "gettempo", 9) == 0) {
+            memset(message, 0, UDP_PACKET_SIZE);
+            snprintf(message, UDP_PACKET_SIZE, "tempo %d", State_get(ID_BPM));
+            UDPreturnPacket(message);
+        }
+        memset(message, 0, UDP_PACKET_SIZE);
+    }
+    return NULL;
 }
