@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdbool.h>
 #include "Audio.h"
 #include "State.h"
@@ -9,6 +10,7 @@
 
 static int16_t *zeros = NULL;
 static pthread_t tickerRoutineThread;
+static sem_t drawSyncSem;
 
 static wavedata_t ticks[SAMPLENUM_MAX];
 static wavedata_t silence;
@@ -57,6 +59,7 @@ static void *tickerRoutine(void *args)
             silence.numSamples = SAMPLE_RATE * (60.0 / bpm) - TICK_SAMPLE_COUNT;
             Audio_play(&ticks[sampleNum]);
             Audio_play(&silence);
+            sem_post(&drawSyncSem);
             currentBeat = circularAdd(currentBeat, timeSig);
             // printf("--> Current beat: %d\n", currentBeat);
         }
@@ -68,6 +71,7 @@ static void *tickerRoutine(void *args)
 void Ticker_init()
 {
     // ticks/0.wav
+    sem_init(&drawSyncSem, 0, 1);
     char tickString[] = {'t', 'i', 'c', 'k', 's', '/', '0', '.', 'w', 'a', 'v', '\0'};
     for (size_t i = 0; i < SAMPLENUM_MAX; i++)
     {
