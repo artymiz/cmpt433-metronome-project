@@ -170,6 +170,15 @@ static void Metronome_runNormalMode()
     delayMs(DELAY_SHORT);
 }
 
+static int circularAdd(int val, int valMax)
+{
+    if (val < valMax)
+    {
+        return val + 1;
+    }
+    return 0;
+}
+
 static void Metronome_runRecordingMode()
 {
     //int bpm = ButtonHistory_calculateBPM();
@@ -183,6 +192,14 @@ static void Metronome_runRecordingMode()
     // printf("recording mode\n");
     Metronome_changeStateSetting(&timeSigCommandInc);
     Metronome_changeStateSetting(&timeSigCommandDec);
+    
+    // next audio sample
+    if (Button_justPressed(BUTTON_INC_BPM)) {
+        int sampleNum = State_get(ID_SAMPLE);
+        int newSampleNum = circularAdd(sampleNum, SAMPLENUM_MAX - 1);
+        printf("Audio sample: %d\n", newSampleNum);
+        State_set(ID_SAMPLE, newSampleNum);
+    }
     delayMs(DELAY_SHORT);
 }
 
