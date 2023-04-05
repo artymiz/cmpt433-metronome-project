@@ -18,13 +18,13 @@
 #define PADDING_LAYOUT 10
 #define FONTSIZE_LARGE 5
 #define FONTSIZE_SMALL 2
-#define Y_BPM 120
-#define Y_VOL 170
+#define Y_BPM 130
+#define Y_VOL 180
 #define X_NUM 140
-#define Y_SAMPLE_LBL 150
-#define X_SAMPLE_LBL 262
+#define Y_SAMPLE_LBL 145
+#define X_SAMPLE_LBL 252
 #define Y_SAMPLE_NUM 170
-#define X_SAMPLE_NUM 273
+#define X_SAMPLE_NUM 270
 
 #define SLEN_MAX 4
 
@@ -122,7 +122,7 @@ void UI_init(unsigned bpm, unsigned vol, unsigned sampleId, unsigned timeSig)
     UI_setBpm(bpm);
     Graphics_writeStr("VOL:", FONTSIZE_LARGE, PADDING_LAYOUT, Y_VOL);
     UI_setVolume(vol);
-    Graphics_writeStr("Audio", FONTSIZE_LARGE, X_SAMPLE_LBL, Y_SAMPLE_LBL);
+    Graphics_writeStr("Audio", FONTSIZE_SMALL, X_SAMPLE_LBL, Y_SAMPLE_LBL);
     UI_setAudioSample(sampleId);
     UI_setTimeSignature(timeSig);
 }
