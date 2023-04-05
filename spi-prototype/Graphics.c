@@ -129,7 +129,7 @@ void Graphics_writeChar(unsigned char c, uint8_t fontsize, uint16_t x0, uint16_t
 // ================
 
 
-static uint8_t _str_spread = 2;
+static uint8_t _str_spread = 1;
 
 // sets how far apart the characters are relative to each other.
 // Scales with the font size - #pixel apart = font size * spread

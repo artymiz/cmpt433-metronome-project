@@ -10,6 +10,6 @@ all:
 	$(CC_C) $(CFLAGS) spi-loopback-test.c -o $(PUBLIC)/spi-looback-test
 	$(CC_C) $(CFLAGS) GPIO.c Display.c Display_test.c -c $(PUBLIC)/Display_test
 	$(CC_C) $(CFLAGS) GPIO.c Graphics.c Display.c Graphics_test.c -o $(PUBLIC)/Graphics_test
+	$(CC_C) $(CFLAGS) GPIO.c Graphics.c Display.c Ui.c Ui_test.c -o $(PUBLIC)/Ui_test
 	$(CC_C) $(CFLAGS) GPIO.c spi-prototype.c -o $(PUBLIC)/spi-prototype
-	chmod +x config-pin-script.sh
-	cp config-pin-script.sh $(PUBLIC)
+	# cp $(OUTDIR)/config-pin-script.sh $(PUBLIC)
