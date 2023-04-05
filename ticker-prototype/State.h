@@ -7,6 +7,7 @@ typedef enum stateid {
     ID_TIMESIG,
     ID_MODE,
     ID_ISPAUSED,
+    ID_SAMPLE,
     STATECOUNT
 } stateid_t;
 
