@@ -1,20 +1,17 @@
-var connection_status = false
+
 var socket = io.connect()
 const tempoInputElement = document.getElementById('tempoval')
 // const MINTEMPO
 // const MAXTEMPO
 
-socket.on('command-reply', (reply) => {
-    if (!connection_status) {
-        connection_status = true
-        $('#online-status-header')[0].style.color = 'green'
-        $('#online-status-header')[0].innerText = 'online'
-        $('#status')[0].hidden = false
-    }
+socket.on('command-reply', function(reply) {
+    $('#status').text("Online");
+    $('#status').css('color', 'green');
     const [type, value] = reply.split(' ')
     switch (type) {
         case 'tempo':
-            tempoInputElement.value = parseInt(value)
+            $('#tempoval').text(value);
+            //tempoInputElement.value = parseInt(value)
             break
         case 'time':
             let time_val = parseInt(value)
@@ -24,20 +21,12 @@ socket.on('command-reply', (reply) => {
 })
 
 $('#tempo-decrease-btn').click(() => {
-    if (connection_status) {
-        let val = parseInt(tempoInputElement.value)
-        val = val - 5 > 40 ? val - 5 : 40
         // socket.emit('command-send'...) has corresponding socket.on('command-send', (arg) => ...) in udp-mechanism.js
-        socket.emit('command-send', 'tempo ' + val + '\n')
-    }
+        socket.emit('command-send', 'tempodec')
 })
 
 $('#tempo-increase-btn').click(() => {
-    if (connection_status) {
-        let val = parseInt(tempoInputElement.value)
-        val = val + 5 < 200 ? val + 5 : 200
-        socket.emit('command-send', 'tempo ' + val + '\n')
-    }
+        socket.emit('command-send', 'tempoinc')
 })
 
 const time_convert = (seconds) => {
@@ -51,6 +40,6 @@ const time_convert = (seconds) => {
 
 $(document).ready(function () {
     window.setInterval(() => {
-        socket.emit('command-send', 'uptime\n')
+        socket.emit('command-send', 'gettempo')
     }, 1000)
 })

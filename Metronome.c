@@ -8,6 +8,7 @@
 #include "utility/Timing.h"
 #include <pthread.h>
 #include <stdbool.h>
+#include "utility/UDPMessageController.h"
 
 #define CHANGE_MODE_DELAY 1000
 #define ON_OFF_HOLD_DELAY 3000
@@ -30,8 +31,8 @@
 #define BPM_CHANGE_SHORT_HOLD 5
 #define BPM_CHANGE_LONG_HOLD 10
 #define TIMESIG_CHANGE_PRESS 1
-#define TIMESIG_CHANGE_SHORT_HOLD 3
-#define TIMESIG_CHANGE_LONG_HOLD 5
+#define TIMESIG_CHANGE_SHORT_HOLD 1
+#define TIMESIG_CHANGE_LONG_HOLD 1
 
 #define NS_PER_MS 1000000LL
 
@@ -46,6 +47,8 @@ static struct configCommand volCommandInc;
 static struct configCommand volCommandDec;
 static struct configCommand timeSigCommandInc;
 static struct configCommand timeSigCommandDec;
+static pthread_t udpListenerThread;
+static void* Metronome_runUDPListeningLoop();
 
 void Metronome_changeStateSetting(struct configCommand* command)
 {
@@ -74,6 +77,7 @@ void Metronome_changeStateSetting(struct configCommand* command)
 
 void Metronome_init()
 {
+    UDPListenerInit();
     // set other button timing here, if needed
     Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, CHANGE_MODE_DELAY);
     Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, ON_OFF_HOLD_DELAY);
@@ -125,6 +129,9 @@ void Metronome_init()
     bpmCommandDec.deltas[1] = BPM_CHANGE_SHORT_HOLD;
     bpmCommandDec.deltas[2] = BPM_CHANGE_LONG_HOLD;
     bpmCommandDec.direction = -1;
+
+    pthread_create(&udpListenerThread, NULL, &Metronome_runUDPListeningLoop, NULL);
+
 }
 
 void Metronome_cleanup()
@@ -133,6 +140,8 @@ void Metronome_cleanup()
     // set other button timing here, if needed
     Button_setShortHoldDelay(BUTTON_PLAY_PAUSE, -1);
     Button_setLongHoldDelay(BUTTON_PLAY_PAUSE, -1);
+    pthread_join(udpListenerThread, NULL);
+    UDPListenerCleanup();
 }
 
 /**
@@ -170,6 +179,15 @@ static void Metronome_runNormalMode()
     delayMs(DELAY_SHORT);
 }
 
+static int circularAdd(int val, int valMax)
+{
+    if (val < valMax)
+    {
+        return val + 1;
+    }
+    return 0;
+}
+
 static void Metronome_runRecordingMode()
 {
     //int bpm = ButtonHistory_calculateBPM();
@@ -183,6 +201,14 @@ static void Metronome_runRecordingMode()
     // printf("recording mode\n");
     Metronome_changeStateSetting(&timeSigCommandInc);
     Metronome_changeStateSetting(&timeSigCommandDec);
+    
+    // next audio sample
+    if (Button_justPressed(BUTTON_INC_BPM)) {
+        int sampleNum = State_get(ID_SAMPLE);
+        int newSampleNum = circularAdd(sampleNum, SAMPLENUM_MAX - 1);
+        printf("Audio sample: %d\n", newSampleNum);
+        State_set(ID_SAMPLE, newSampleNum);
+    }
     delayMs(DELAY_SHORT);
 }
 
@@ -231,4 +257,31 @@ void Metronome_mainThread()
         }
         //delayMs(20);
     }
+}
+
+static void* Metronome_runUDPListeningLoop() {
+    char* message;
+    while (KillSignal_getIsRunning()) {
+        message = UDPlistenForMessage();
+        //printf(message);
+        if (strncmp(message, "tempoinc", 9) == 0) {
+            if (!State_get(ID_ISPAUSED))
+                State_set(ID_BPM, State_get(ID_BPM) + 5);
+            memset(message, 0, UDP_PACKET_SIZE);
+            snprintf(message, UDP_PACKET_SIZE, "tempo %d", State_get(ID_BPM));
+            UDPreturnPacket(message);
+        } else if (strncmp(message, "tempodec", 9) == 0) {
+            if (!State_get(ID_ISPAUSED))
+                State_set(ID_BPM, State_get(ID_BPM) - 5);
+            memset(message, 0, UDP_PACKET_SIZE);
+            snprintf(message, UDP_PACKET_SIZE, "tempo %d", State_get(ID_BPM));
+            UDPreturnPacket(message);
+        } else if (strncmp(message, "gettempo", 9) == 0) {
+            memset(message, 0, UDP_PACKET_SIZE);
+            snprintf(message, UDP_PACKET_SIZE, "tempo %d", State_get(ID_BPM));
+            UDPreturnPacket(message);
+        }
+        memset(message, 0, UDP_PACKET_SIZE);
+    }
+    return NULL;
 }

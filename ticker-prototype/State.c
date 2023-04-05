@@ -18,13 +18,15 @@ static float stateMins[] = {1, //BPM
                             0, //volume
                             1, //time signature
                             0, //mode
-                            0  //is paused
+                            0, //is paused
+                            0 // sample number
                            };
 static float stateMaxs[] = {350, //BPM
                             100, //volume
                             100, //time signature
                             1,   //mode
-                            1    //is paused
+                            1,    //is paused
+                            4    // sample number 
                             };
 
 // File to array

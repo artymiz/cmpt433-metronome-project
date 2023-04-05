@@ -11,9 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "formidable": "^2.1.1",
+    "lodash": "4.17.21",
     "mime": "~1.2.7",
-    "socket.io": "~0.9.6",
-    "formidable": "2.1.1",
-    "lodash": "4.17.21"
+    "socket.io": "~0.9.6"
   }
 }
